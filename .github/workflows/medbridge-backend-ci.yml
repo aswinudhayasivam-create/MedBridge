@@ -1,0 +1,25 @@
+name: MedBridge backend build
+on:
+  push:
+    branches: [feature/phase-2-auth]
+    paths:
+      - 'MedBridge-Phase-1/medbridge/backend/**'
+      - '.github/workflows/medbridge-backend-ci.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: MedBridge-Phase-1/medbridge/backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+          cache-dependency-path: MedBridge-Phase-1/medbridge/backend/pom.xml
+      - name: Compile and test Spring Boot
+        run: mvn -B -ntp verify
