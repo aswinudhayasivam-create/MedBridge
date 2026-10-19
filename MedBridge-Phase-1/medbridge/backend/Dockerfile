@@ -9,6 +9,7 @@ RUN mvn -B -ntp -DskipTests package
 FROM eclipse-temurin:17-jre
 WORKDIR /app
 COPY --from=build /workspace/target/medbridge-backend-0.1.0-SNAPSHOT.jar /app/app.jar
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=65.0 -XX:+ExitOnOutOfMemoryError"
 EXPOSE 10000
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["sh", "/app/docker-entrypoint.sh"]
