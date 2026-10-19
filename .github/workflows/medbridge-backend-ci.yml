@@ -23,3 +23,7 @@ jobs:
           cache-dependency-path: MedBridge-Phase-1/medbridge/backend/pom.xml
       - name: Compile and test Spring Boot
         run: mvn -B -ntp verify
+      - name: Check Docker startup script syntax
+        run: sh -n docker-entrypoint.sh
+      - name: Ensure Dockerfile runs startup script
+        run: grep -F 'ENTRYPOINT ["sh", "/app/docker-entrypoint.sh"]' Dockerfile
