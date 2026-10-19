@@ -23,7 +23,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 String email=jwt.subject(header.substring(7));
                 users.findByEmailIgnoreCase(email).ifPresent(user -> {
-                    var authorities=(user.getRole()==com.medbridge.model.Role.NGO && !user.isVerified())\n                        ? List.<SimpleGrantedAuthority>of()\n                        : List.of(new SimpleGrantedAuthority("ROLE_"+user.getRole().name()));
+                    var authorities=(user.getRole()==com.medbridge.model.Role.NGO && !user.isVerified())
+                        ? List.<SimpleGrantedAuthority>of()
+                        : List.of(new SimpleGrantedAuthority("ROLE_"+user.getRole().name()));
                     var auth=new UsernamePasswordAuthenticationToken(user.getEmail(), null, authorities);
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 });
