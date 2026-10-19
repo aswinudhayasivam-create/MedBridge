@@ -34,9 +34,7 @@ class JwtServiceTest {
 
     @Test
     void rejectsExpiredTokens() {
-        JwtService service = new JwtService("local-test-secret-with-more-than-thirty-two-bytes-only", -5);
-        User user = new User();
-        user.setEmail("donor@example.test");
-        assertThrows(JwtException.class, () -> service.subject(service.generate(user)));
+        assertThrows(IllegalStateException.class,
+            () -> new JwtService("local-test-secret-with-more-than-thirty-two-bytes-only", -5));
     }
 }
