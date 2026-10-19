@@ -18,7 +18,7 @@ public class JwtService {
                       @Value("${app.jwt.expiry-seconds:3600}") long expirySeconds) {
         if (secret == null || secret.getBytes(StandardCharsets.UTF_8).length < 32)
             throw new IllegalStateException("JWT_SECRET must contain at least 32 UTF-8 bytes");
-        this.key=Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        if (expirySeconds <= 0 || expirySeconds > 86400)\n            throw new IllegalStateException("JWT expiry must be between 1 and 86400 seconds");\n        this.key=Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.expirySeconds=expirySeconds;
     }
     // Signed token contains only identity; authorities are loaded from the database.
