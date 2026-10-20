@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:safety": "node --test src/test/*.node.test.js",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "dev:local-auth": "vite --mode local-auth --host 127.0.0.1"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
