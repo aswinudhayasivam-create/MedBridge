@@ -1,8 +1,12 @@
 export class ApiError extends Error {
-  constructor(message, status) {
+  constructor(message, status, fields = {}) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
+    const allowed = ['name', 'email', 'password', 'role', 'orgName', 'licenseNo', 'serviceArea'];
+    this.fields = Object.fromEntries(Object.entries(fields && typeof fields === 'object' ? fields : {})
+      .filter(([key, value]) => allowed.includes(key) && typeof value === 'string')
+      .map(([key, value]) => [key, value.slice(0, 160)]));
   }
 }
 
@@ -48,7 +52,7 @@ export function createApiClient({ enabled = false, baseUrl = '', development = f
       try { data = text ? JSON.parse(text) : null; } catch { data = null; }
       if (!res.ok) {
         const fromApi = data && typeof data.error === 'string' ? data.error : null;
-        throw new ApiError(fromApi?.slice(0, 240) || `Request failed (HTTP ${res.status}).`, res.status);
+        throw new ApiError(fromApi?.slice(0, 240) || `Request failed (HTTP ${res.status}).`, res.status, data?.fields);
       }
       if (!data || typeof data !== 'object') throw new ApiError('Unexpected API response.', res.status);
       return data;
