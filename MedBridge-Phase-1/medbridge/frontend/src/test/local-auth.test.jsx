@@ -1,7 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter, useNavigate } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '../context/AuthContext.jsx';
+import * as AuthContextModule from '../context/AuthContext.jsx';
+import { AuthPage } from '../pages/Auth.jsx';
 import App from '../App.jsx';
 
 vi.mock('../lib/api.js', async () => {
@@ -52,6 +54,27 @@ beforeEach(() => {
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
 describe('explicit local authentication', () => {
+  it('preserves the submit redirect when the session updates before login resolves', async () => {
+    let finish;
+    const login = vi.fn(() => new Promise(resolve => { finish = resolve; }));
+    const auth = vi.spyOn(AuthContextModule, 'useAuth').mockReturnValue({ session: null, login });
+    function Destination() { const location = useLocation(); return <output>{location.state?.authMessage || 'Missing success feedback'}</output>; }
+    const tree = <MemoryRouter initialEntries={['/login']}><Routes>
+      <Route path="/login" element={<AuthPage/>}/>
+      <Route path="/dashboard" element={<Destination/>}/>
+      <Route path="/dashboard/donor" element={<Destination/>}/>
+    </Routes></MemoryRouter>;
+    const page = render(tree); fill(false); submit(page);
+    auth.mockReturnValue({ session: { token: bearer, user: account }, login });
+    page.rerender(<MemoryRouter initialEntries={['/login']}><Routes>
+      <Route path="/login" element={<AuthPage/>}/>
+      <Route path="/dashboard" element={<Destination/>}/>
+      <Route path="/dashboard/donor" element={<Destination/>}/>
+    </Routes></MemoryRouter>);
+    expect(screen.getByRole('button', { name: /Please wait/ })).toBeDisabled();
+    await act(async () => finish(account));
+    expect(await screen.findByText('Signed in to your local test account.')).toBeInTheDocument();
+  });
   it.each(['DONOR', 'NGO'])('registers a %s using the database profile, then logs out and back in', async role => {
     const storage = vi.spyOn(Storage.prototype, 'setItem');
     const page = view(); fill(true, role === 'NGO'); submit(page);
