@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { ArrowRight, Eye, EyeOff, HandHeart, HeartHandshake, LockKeyhole, ShieldCheck, UsersRound } from 'lucide-react';
 import { AUTH_ENABLED } from '../lib/api.js';
@@ -22,9 +22,11 @@ export function AuthPage({ register = false }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
+  const ownsRedirect = useRef(false);
   const update = (key) => (event) => { setError(''); setFieldErrors(s => ({ ...s, [key]: '' })); setForm(s => ({ ...s, [key]: event.target.value })); };
 
-  if (session) return <Navigate to="/dashboard" replace/>;
+  // Keep the submit redirect authoritative until this page unmounts.
+  if (session && !ownsRedirect.current) return <Navigate to="/dashboard" replace/>;
   const submit = async event => {
     event.preventDefault();
     setError('');
@@ -32,6 +34,7 @@ export function AuthPage({ register = false }) {
     if (!AUTH_ENABLED) { setError('Account submissions are disabled in this preview. No information has been sent.'); return; }
     const problem = register ? validateRegistration(form) : (!EMAIL_RE.test(form.email.trim()) || !form.password ? 'Enter your email and password.' : '');
     if (problem) { setError(problem); return; }
+    ownsRedirect.current = true;
     setLoading(true);
     try {
       const user = register
@@ -41,7 +44,7 @@ export function AuthPage({ register = false }) {
       navigate(user.role === 'NGO' ? '/dashboard/ngo' : '/dashboard/donor', {
         replace: true, state: { authMessage: register ? 'Local test account created.' : 'Signed in to your local test account.' },
       });
-    } catch (err) { setError(err.message || 'Please try again.'); setFieldErrors(err.fields || {}); }
+    } catch (err) { ownsRedirect.current = false; setError(err.message || 'Please try again.'); setFieldErrors(err.fields || {}); }
     finally { setLoading(false); }
   };
 
