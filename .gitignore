@@ -1,0 +1,6 @@
+/.local-auth/
+**/target/
+**/.env
+**/.env.local
+**/.env.*.local
+*.log
