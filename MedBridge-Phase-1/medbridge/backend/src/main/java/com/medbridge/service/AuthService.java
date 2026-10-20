@@ -5,6 +5,7 @@ import com.medbridge.model.*;
 import com.medbridge.repository.*;
 import com.medbridge.security.JwtService;
 import com.medbridge.exception.ApiException;
+import com.medbridge.config.RegistrationPolicy;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,11 +18,14 @@ public class AuthService {
     private final NgoProfileRepository ngos;
     private final PasswordEncoder passwords;
     private final JwtService jwt;
-    public AuthService(UserRepository users, NgoProfileRepository ngos, PasswordEncoder passwords, JwtService jwt) {
+    private final RegistrationPolicy registration;
+    public AuthService(UserRepository users, NgoProfileRepository ngos, PasswordEncoder passwords, JwtService jwt, RegistrationPolicy registration) {
         this.users=users; this.ngos=ngos; this.passwords=passwords; this.jwt=jwt;
+        this.registration=registration;
     }
     @Transactional
     public AuthResponse register(RegisterRequest request) {
+        registration.requireRegistration();
         if (request.role()==Role.ADMIN) throw new ApiException(HttpStatus.BAD_REQUEST,"Admin registration is disabled");
         String email=request.email().trim().toLowerCase(Locale.ROOT);
         if (users.existsByEmailIgnoreCase(email)) throw new ApiException(HttpStatus.CONFLICT,"Email already registered");
