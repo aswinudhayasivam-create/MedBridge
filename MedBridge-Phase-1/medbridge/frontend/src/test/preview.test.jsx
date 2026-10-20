@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { AuthProvider } from '../context/AuthContext.jsx';
@@ -10,6 +10,15 @@ function view(route) {
 }
 
 describe('phase 3 safe preview', () => {
+  it('blocks login even if a submit event bypasses the disabled button', () => {
+    const request = vi.spyOn(globalThis, 'fetch');
+    const page = view('/login');
+    expect(screen.getByRole('button', { name: /^Sign in/i })).toBeDisabled();
+    fireEvent.submit(page.container.querySelector('form'));
+    expect(screen.getByRole('alert')).toHaveTextContent(/No information has been sent/);
+    expect(request).not.toHaveBeenCalled();
+    request.mockRestore();
+  });
   it('shows homepage safety notice', () => {
     view('/');
     expect(screen.getByText(/No medicine submissions or transfers are available/i)).toBeInTheDocument();
