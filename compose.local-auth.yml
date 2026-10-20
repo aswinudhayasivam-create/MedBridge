@@ -1,0 +1,24 @@
+name: medbridge-phase4-local-auth
+services:
+  database:
+    image: mysql:8.4
+    ports:
+      - '127.0.0.1:13306:3306'
+    environment:
+      MYSQL_DATABASE: medbridge_phase4_dev
+      MYSQL_USER: ${PHASE4_DB_USERNAME:?Run the local Prepare command first}
+      MYSQL_PASSWORD: ${PHASE4_DB_PASSWORD:?Run the local Prepare command first}
+      MYSQL_ROOT_PASSWORD: ${PHASE4_DB_ROOT_PASSWORD:?Run the local Prepare command first}
+    volumes:
+      - type: bind
+        source: F:/Docker/MedBridge-MySQL
+        target: /var/lib/mysql
+        bind:
+          create_host_path: false
+      - ./MedBridge-Phase-1/medbridge/backend/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'MYSQL_PWD="$$MYSQL_PASSWORD" mysql --protocol=TCP -h127.0.0.1 -u"$$MYSQL_USER" -D"$$MYSQL_DATABASE" -e "SELECT 1" >/dev/null 2>&1']
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    restart: 'no'
