@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { ArrowRight, HeartHandshake, Menu, X, ShieldCheck, ExternalLink } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -12,15 +12,16 @@ export function Brand({ light = false }) {
 
 export function Header() {
   const [open, setOpen] = useState(false);
+  const menuToggle = useRef(null);
   const { session, logout } = useAuth();
   const close = () => setOpen(false);
   return <>
     <div className="development-banner"><ShieldCheck size={14} /> Platform preview · No medicine submissions or transfers are available</div>
     <header className="site-header">
-      <div className="container nav-content">
+      <div className="container nav-content" onKeyDown={event => { if (event.key === 'Escape' && open) { close(); menuToggle.current?.focus(); } }}>
         <Brand />
-        <button className="mobile-nav-toggle" type="button" aria-label={open ? 'Close navigation' : 'Open navigation'} aria-expanded={open} onClick={() => setOpen(x => !x)}>{open ? <X size={23} /> : <Menu size={23} />}</button>
-        <nav className={`nav-links ${open ? 'nav-open' : ''}`} aria-label="Main navigation">
+        <button ref={menuToggle} aria-controls="primary-navigation" className="mobile-nav-toggle" type="button" aria-label={open ? 'Close navigation' : 'Open navigation'} aria-expanded={open} onClick={() => setOpen(x => !x)}>{open ? <X size={23} /> : <Menu size={23} />}</button>
+        <nav id="primary-navigation" className={`nav-links ${open ? 'nav-open' : ''}`} aria-label="Main navigation">
           <NavLink onClick={close} to="/" end>Home</NavLink>
           <Link onClick={close} to="/#how-it-works">How it works</Link>
           <Link onClick={close} to="/#safety">Our approach</Link>
