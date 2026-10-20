@@ -12,8 +12,15 @@ This is a **development preview**, not a live medicine exchange. It uses the exi
 
 ## Run / verify
 
+Use Node 24 LTS (Node 22.12+ is also supported). Dependencies are locked; use
+`npm ci` for reproducible local and CI installs. See [DEPENDENCY-SECURITY.md](DEPENDENCY-SECURITY.md)
+for the security audit, migration details, and Tailwind v4 browser requirements.
+
 ```bash
-npm install
+npm ci
+npm audit
+npm audit --omit=dev
+npm run test:safety
 npm test
 npm run build
 npm run dev
