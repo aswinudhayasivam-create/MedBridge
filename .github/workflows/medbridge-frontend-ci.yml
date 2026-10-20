@@ -1,0 +1,32 @@
+name: MedBridge Phase 3 frontend checks
+on:
+  push:
+    branches: [feature/phase-3-website]
+    paths:
+      - 'MedBridge-Phase-1/medbridge/frontend/**'
+      - '.github/workflows/medbridge-frontend-ci.yml'
+  pull_request:
+    paths:
+      - 'MedBridge-Phase-1/medbridge/frontend/**'
+      - '.github/workflows/medbridge-frontend-ci.yml'
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: MedBridge-Phase-1/medbridge/frontend
+    env:
+      VITE_ENABLE_AUTH_SUBMISSIONS: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Offline safety checks
+        run: npm run test:safety
+      - name: Component and API integration tests (mocked)
+        run: npm test
+      - name: Build preview assets
+        run: npm run build
