@@ -1,7 +1,7 @@
 name: MedBridge Phase 3 frontend checks
 on:
   push:
-    branches: [feature/phase-3-website, feature/phase-3-dependency-hardening]
+    branches: ['feature/phase-3-*']
     paths:
       - 'MedBridge-Phase-1/medbridge/frontend/**'
       - '.github/workflows/medbridge-frontend-ci.yml'
