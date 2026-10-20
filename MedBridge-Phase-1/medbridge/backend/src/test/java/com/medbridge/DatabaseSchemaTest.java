@@ -9,6 +9,10 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.PortBinding;
+import com.github.dockerjava.api.model.Ports;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -18,8 +22,10 @@ class DatabaseSchemaTest {
     @Container
     static final MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.4")
         .withDatabaseName("medbridge_auth_test")
-        .withUsername("medbridge_test")
-        .withPassword("test-only-password");
+        .withUsername("phase4_" + UUID.randomUUID().toString().replace("-", "").substring(0, 12))
+        .withPassword(UUID.randomUUID().toString())
+        .withCreateContainerCmdModifier(command -> command.getHostConfig().withPortBindings(
+            new PortBinding(Ports.Binding.bindIpAndPort("127.0.0.1", 0), new ExposedPort(3306))));
 
     @DynamicPropertySource
     static void database(DynamicPropertyRegistry registry) {
@@ -27,7 +33,8 @@ class DatabaseSchemaTest {
         registry.add("spring.datasource.username", mysql::getUsername);
         registry.add("spring.datasource.password", mysql::getPassword);
         registry.add("spring.sql.init.mode", () -> "always");
-        registry.add("app.jwt.secret", () -> "isolated-database-test-secret-with-32-plus-bytes");
+        String signingSecret = UUID.randomUUID().toString() + UUID.randomUUID();
+        registry.add("app.jwt.secret", () -> signingSecret);
         registry.add("app.frontend-url", () -> "http://localhost:5173");
     }
 
