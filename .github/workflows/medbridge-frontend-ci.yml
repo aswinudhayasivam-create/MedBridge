@@ -1,7 +1,7 @@
 name: MedBridge Phase 3 frontend checks
 on:
   push:
-    branches: [feature/phase-3-website]
+    branches: [feature/phase-3-website, feature/phase-3-dependency-hardening]
     paths:
       - 'MedBridge-Phase-1/medbridge/frontend/**'
       - '.github/workflows/medbridge-frontend-ci.yml'
@@ -21,9 +21,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24'
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
+      - name: Audit dependencies
+        run: npm audit
+      - name: Audit production dependencies
+        run: npm audit --omit=dev
       - name: Offline safety checks
         run: npm run test:safety
       - name: Component and API integration tests (mocked)
