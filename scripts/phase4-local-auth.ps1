@@ -4,7 +4,8 @@ param(
     [ValidateSet('Prepare', 'Database', 'Backend', 'Frontend', 'UnitTests', 'IntegrationTests', 'StopDatabase')]
     [string]$Action,
     [switch]$EnableRegistration,
-    [switch]$EnableSubmissions
+    [switch]$EnableSubmissions,
+    [switch]$EnableDemo
 )
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path -Parent $PSScriptRoot
@@ -116,11 +117,13 @@ try {
         'Frontend' {
             Set-ChildEnvironment 'VITE_ENABLE_AUTH_SUBMISSIONS' $(if ($EnableSubmissions) { 'true' } else { 'false' })
             Set-ChildEnvironment 'VITE_API_BASE_URL' ''
+            Set-ChildEnvironment 'VITE_ENABLE_DEMO_WORKFLOWS' $(if ($EnableDemo) { 'true' } else { 'false' })
             Push-Location $frontend
             try { & npm run dev:local-auth; if ($LASTEXITCODE -ne 0) { throw 'Vite failed.' } } finally { Pop-Location }
         }
         { $_ -in 'Backend','UnitTests','IntegrationTests' } {
             Require-Java17
+            Set-ChildEnvironment 'APP_DEMO_WORKFLOWS' $(if ($EnableDemo) { 'true' } else { 'false' })
             if ($Action -eq 'UnitTests') {
                 Set-ChildEnvironment 'SPRING_PROFILES_ACTIVE' ''
                 Set-ChildEnvironment 'APP_ALLOW_REGISTRATION' 'false'
@@ -129,10 +132,10 @@ try {
                 Require-LocalDocker
                 Set-ChildEnvironment 'SPRING_PROFILES_ACTIVE' 'local-auth'
                 Set-ChildEnvironment 'SPRING_DATASOURCE_URL' $jdbc
-                Set-ChildEnvironment 'APP_ALLOW_REGISTRATION' $(if ($EnableRegistration -or $Action -eq 'IntegrationTests') { 'true' } else { 'false' })
+                Set-ChildEnvironment 'APP_ALLOW_REGISTRATION' $(if (-not $EnableDemo -and ($EnableRegistration -or $Action -eq 'IntegrationTests')) { 'true' } else { 'false' })
                 if ($Action -eq 'IntegrationTests') {
                     # Explicit selection includes *IT, which is deliberately excluded from ordinary unit tests.
-                    $mavenArgs = @('-B', '-Dtest=LocalAuthMySqlIT', 'test')
+                    $mavenArgs = @('-B', $(if ($EnableDemo) { '-Dtest=DemoMySqlIT' } else { '-Dtest=LocalAuthMySqlIT' }), 'test')
                 } else { $mavenArgs = @('spring-boot:run') }
             }
             Push-Location $backend
@@ -140,6 +143,7 @@ try {
                 & mvn @mavenArgs
                 if ($LASTEXITCODE -ne 0) { throw 'The Maven command failed.' }
                 if ($Action -eq 'IntegrationTests') {
+                    Set-ChildEnvironment 'APP_DEMO_WORKFLOWS' 'false'
                     Set-ChildEnvironment 'SPRING_PROFILES_ACTIVE' ''
                     Set-ChildEnvironment 'APP_ALLOW_REGISTRATION' 'false'
                     & mvn -B '-Dtest=DatabaseSchemaTest' test
