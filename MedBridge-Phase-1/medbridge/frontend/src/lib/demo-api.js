@@ -1,8 +1,11 @@
 import { AUTH_ENABLED, apiRequest, ApiError } from './api.js';
 
+import { REVIEW_ENABLED, reviewRequest } from './review-api.js';
+
 export const DEMO_ENABLED = __MEDBRIDGE_DEMO_SERVER__ && AUTH_ENABLED;
 
 export async function demoRequest(path, token, { method = 'GET', body, binary = false } = {}) {
+  if (REVIEW_ENABLED) return reviewRequest(path, { method, body, token, binary });
   if (!DEMO_ENABLED) throw new ApiError('Fictional demo workflows are disabled.', 404);
   const capability = await apiRequest('/api/auth/local-mode');
   if (capability.environment !== 'isolated-local-auth' || capability.demoEnabled !== true) {
