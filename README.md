@@ -1,12 +1,12 @@
-# MedBridge â€” Smart Medicine Redistribution Network
+# MedBridge — Smart Medicine Redistribution Network
 
 **A donation-only full-stack application connecting donors with verified fictional NGO/clinic receivers.**
 
-React / Vite Â· Java 17 / Spring Boot 3 Â· Spring Security / JWT / BCrypt Â· MySQL 8
+React / Vite · Java 17 / Spring Boot 3 · Spring Security / JWT / BCrypt · MySQL 8
 
 > **Evaluation status:** the complete local workflow is verified. A separate protected online review mode is implemented for deployment preparation; **no working hosted review environment or URL is claimed**. Registration, payments and physical medicine transfers are disabled. The online review window ends after October 26, 2026 in Asia/Kolkata time.
 
-[Commit manifest](COMMIT-MANIFEST.md) · [Demo logins](DEMO-LOGIN.md) Â· [Setup](DEMO-SETUP.md) Â· [Viva walkthrough](DEMO-WALKTHROUGH.md) Â· [Project status](PROJECT-STATUS.md) Â· [Deployment guide](DEPLOYMENT-GUIDE.md)
+[Commit manifest](COMMIT-MANIFEST.md) · [Demo logins](DEMO-LOGIN.md) · [Setup](DEMO-SETUP.md) · [Viva walkthrough](DEMO-WALKTHROUGH.md) · [Project status](PROJECT-STATUS.md) · [Deployment guide](DEPLOYMENT-GUIDE.md)
 
 ## 1. Project overview
 
@@ -107,7 +107,7 @@ Actual application captures from the completed local walkthrough; illustrated co
 
 **Pending deployment and exposure approval. No verified hosted review URL is available.**
 
-The intended evaluation runs independently of a home computer: protected Vercel frontend â†’ dedicated Render review API â†’ isolated persistent MySQL. It uses the same functional screens and service logic. Server configuration, a dedicated database marker/restricted user, invitation key, JWT authorization and expiration must all pass. See [DEPLOYMENT-GUIDE.md](DEPLOYMENT-GUIDE.md) for approvals and exact settings. The old Phase 2 backend is not a review target.
+The intended evaluation runs independently of a home computer: protected Vercel frontend → dedicated Render review API → isolated persistent MySQL. It uses the same functional screens and service logic. Server configuration, a dedicated database marker/restricted user, invitation key, JWT authorization and expiration must all pass. See [DEPLOYMENT-GUIDE.md](DEPLOYMENT-GUIDE.md) for approvals and exact settings. The old Phase 2 backend is not a review target.
 
 ## 13. Local setup
 
