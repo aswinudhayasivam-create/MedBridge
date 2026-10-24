@@ -2,6 +2,7 @@ package com.medbridge.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.medbridge.config.RegistrationPolicy;
+import com.medbridge.config.DemoIdentityPolicy;
 import com.medbridge.config.SecurityConfig;
 import com.medbridge.controller.AuthController;
 import com.medbridge.controller.RoleDemoController;
@@ -27,7 +28,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest({AuthController.class, RoleDemoController.class})
-@Import({SecurityConfig.class, JwtAuthenticationFilter.class, RegistrationPolicy.class})
+@Import({SecurityConfig.class, JwtAuthenticationFilter.class, RegistrationPolicy.class, DemoIdentityPolicy.class})
 @TestPropertySource(properties = {"app.frontend-url=http://127.0.0.1:5173", "app.allow-registration=false"})
 class AuthWebSecurityTest {
     @Autowired MockMvc mvc;
@@ -75,6 +76,20 @@ class AuthWebSecurityTest {
         String bearer = bearer(Role.NGO, true);
         mvc.perform(get("/api/roles/ngo").header("Authorization", bearer)).andExpect(status().isOk());
         mvc.perform(get("/api/roles/donor").header("Authorization", bearer)).andExpect(status().isForbidden());
+    }
+
+    @Test void cryptographicallyValidDemoTokensCannotReachHostedProtectedEndpoints() throws Exception {
+        JwtService signer = new JwtService(UUID.randomUUID().toString() + UUID.randomUUID(), 3600);
+        for (String identity : java.util.List.of("meera", "divya", "pending", "admin")) {
+            for (String email : java.util.List.of(identity + "@medbridge.test", identity.toUpperCase(java.util.Locale.ROOT) + "@MedBridge.Test")) {
+                User user = new User(); user.setEmail(email); user.setRole(Role.ADMIN);
+                String token = signer.generate(user);
+                when(jwt.subject(token)).thenReturn(signer.subject(token));
+                mvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + token)).andExpect(status().isUnauthorized());
+                mvc.perform(get("/api/roles/admin").header("Authorization", "Bearer " + token)).andExpect(status().isUnauthorized());
+            }
+        }
+        verifyNoInteractions(auth, users);
     }
 
     @Test void missingAndInvalidTokensReturn401() throws Exception {
