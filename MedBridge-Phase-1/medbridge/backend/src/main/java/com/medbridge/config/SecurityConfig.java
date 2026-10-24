@@ -1,6 +1,7 @@
 package com.medbridge.config;
 
 import com.medbridge.security.JwtAuthenticationFilter;
+import com.medbridge.review.ReviewAccessFilter;
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,7 +49,12 @@ public class SecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtFilter) throws Exception {
+    FilterRegistrationBean<ReviewAccessFilter> reviewFilterRegistration(ReviewAccessFilter filter) {
+        var registration = new FilterRegistrationBean<>(filter); registration.setEnabled(false); return registration;
+    }
+
+    @Bean
+    SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtFilter, ReviewAccessFilter reviewFilter) throws Exception {
         return http
             .csrf(csrf -> csrf.disable())
             .cors(cors -> {})
@@ -61,9 +67,10 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
-                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/health", "/api/auth/local-mode").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/health", "/api/auth/local-mode", "/api/auth/review-mode", "/api/review/ready").permitAll()
                 .anyRequest().authenticated())
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(reviewFilter, JwtAuthenticationFilter.class)
             .build();
     }
 
@@ -74,7 +81,7 @@ public class SecurityConfig {
             .map(String::trim).filter(value -> !value.isBlank()).toList();
         cors.setAllowedOrigins(origins);
         cors.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        cors.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        cors.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-MedBridge-Review-Key"));
         cors.setAllowCredentials(false);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", cors);
