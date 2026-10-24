@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { apiRequest } from '../lib/api.js';
+import { DEMO_ENABLED } from '../lib/demo-api.js';
 
 const AuthContext = createContext(null);
 
@@ -14,7 +15,7 @@ export function AuthProvider({ children }) {
   }, [session]);
 
   function checkUser(user) {
-    if (!user || !['DONOR', 'NGO'].includes(user.role)) {
+    if (!user || !['DONOR', 'NGO', ...(DEMO_ENABLED ? ['ADMIN'] : [])].includes(user.role)) {
       throw Object.assign(new Error('This account cannot use the donor or NGO portal.'), { status: 401 });
     }
     return user;
