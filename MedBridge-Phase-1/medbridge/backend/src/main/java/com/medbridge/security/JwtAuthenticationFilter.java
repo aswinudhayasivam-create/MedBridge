@@ -1,6 +1,7 @@
 package com.medbridge.security;
 
 import com.medbridge.repository.UserRepository;
+import com.medbridge.config.DemoIdentityPolicy;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,14 +16,18 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwt;
     private final UserRepository users;
-    public JwtAuthenticationFilter(JwtService jwt, UserRepository users) { this.jwt=jwt; this.users=users; }
+    private final DemoIdentityPolicy demoIdentities;
+    public JwtAuthenticationFilter(JwtService jwt, UserRepository users, DemoIdentityPolicy demoIdentities) {
+        this.jwt=jwt; this.users=users; this.demoIdentities=demoIdentities;
+    }
     @Override protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                                FilterChain chain) throws ServletException, IOException {
         String header=request.getHeader("Authorization");
         if (header!=null && header.startsWith("Bearer ") && SecurityContextHolder.getContext().getAuthentication()==null) {
             try {
                 String email=jwt.subject(header.substring(7));
-                users.findByEmailIgnoreCase(email).ifPresent(user -> {
+                if (demoIdentities.allows(email)) users.findByEmailIgnoreCase(email)
+                    .filter(user -> demoIdentities.allows(user.getEmail())).ifPresent(user -> {
                     var authorities=(user.getRole()==com.medbridge.model.Role.NGO && !user.isVerified())
                         ? List.<SimpleGrantedAuthority>of()
                         : List.of(new SimpleGrantedAuthority("ROLE_"+user.getRole().name()));
