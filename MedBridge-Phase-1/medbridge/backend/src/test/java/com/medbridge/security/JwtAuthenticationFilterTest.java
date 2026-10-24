@@ -1,5 +1,7 @@
 package com.medbridge.security;
 
+import com.medbridge.config.DemoIdentityPolicy;
+import org.springframework.mock.env.MockEnvironment;
 import com.medbridge.model.Role;
 import com.medbridge.model.User;
 import com.medbridge.repository.UserRepository;
@@ -34,7 +36,7 @@ class JwtAuthenticationFilterTest {
         when(users.findByEmailIgnoreCase("ngo@example.test")).thenReturn(Optional.of(ngo(false)));
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/roles/ngo");
         request.addHeader("Authorization", "Bearer valid");
-        new JwtAuthenticationFilter(jwt, users).doFilter(request, new MockHttpServletResponse(), new MockFilterChain());
+        new JwtAuthenticationFilter(jwt, users, new DemoIdentityPolicy(new MockEnvironment())).doFilter(request, new MockHttpServletResponse(), new MockFilterChain());
         assertNotNull(SecurityContextHolder.getContext().getAuthentication());
         assertTrue(SecurityContextHolder.getContext().getAuthentication().getAuthorities().isEmpty());
     }
@@ -47,7 +49,7 @@ class JwtAuthenticationFilterTest {
         when(users.findByEmailIgnoreCase("ngo@example.test")).thenReturn(Optional.of(ngo(true)));
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/roles/ngo");
         request.addHeader("Authorization", "Bearer valid");
-        new JwtAuthenticationFilter(jwt, users).doFilter(request, new MockHttpServletResponse(), new MockFilterChain());
+        new JwtAuthenticationFilter(jwt, users, new DemoIdentityPolicy(new MockEnvironment())).doFilter(request, new MockHttpServletResponse(), new MockFilterChain());
         assertTrue(SecurityContextHolder.getContext().getAuthentication().getAuthorities()
             .stream().anyMatch(a -> a.getAuthority().equals("ROLE_NGO")));
     }
@@ -57,7 +59,7 @@ class JwtAuthenticationFilterTest {
         JwtService jwt = mock(JwtService.class);
         UserRepository users = mock(UserRepository.class);
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/auth/me");
-        new JwtAuthenticationFilter(jwt, users).doFilter(request, new MockHttpServletResponse(), new MockFilterChain());
+        new JwtAuthenticationFilter(jwt, users, new DemoIdentityPolicy(new MockEnvironment())).doFilter(request, new MockHttpServletResponse(), new MockFilterChain());
         assertNull(SecurityContextHolder.getContext().getAuthentication());
         verifyNoInteractions(jwt, users);
     }
