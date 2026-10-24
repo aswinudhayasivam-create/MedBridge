@@ -15,7 +15,7 @@ public class LocalAuthController {
     @GetMapping("/api/auth/local-mode")
     public Map<String, Object> localMode() {
         LocalAuthSafetyConfiguration.requireIsolated(environment);
-        return Map.of("environment", "isolated-local-auth", "registrationEnabled",
+        return Map.of("environment", "isolated-local-auth", "demoEnabled", environment.getProperty("app.demo-workflows", Boolean.class, false), "registrationEnabled",
             environment.getProperty("app.allow-registration", Boolean.class, false));
     }
 }
