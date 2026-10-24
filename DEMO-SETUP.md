@@ -62,3 +62,21 @@ These tests use only fictional isolated data. Stop the interactive backend while
 Stop frontend/backend with Ctrl+C in their terminals. Stop MySQL without deleting data using `.\scripts\phase5-demo.ps1 -Action StopDatabase`. Do not use `down -v`, remove database files, reset tables, modify the startup guard, or connect to production to troubleshoot.
 
 Sessions are intentionally in-memory: a browser refresh signs out, but signing in again restores persisted records. JWT rotation is not part of a routine restart; changing the signing secret would also invalidate encrypted demo handoff codes, which donors can replace by rescheduling.
+
+
+## Separate local review rehearsal (not a hosted deployment)
+
+Use Java 17 and the existing Docker Linux engine. This creates a new temporary, labelled MySQL container on `127.0.0.1:13307`; it never touches the existing demo database on 13306. Its data survives backend restart, but not container replacement because it is tmpfs-backed. The test window is deliberately limited to the October 26 cutoff; it will fail closed afterward.
+
+```powershell
+.\scripts\review-local.ps1 -Action PrepareDatabase
+.\scripts\review-local.ps1 -Action Backend
+# Another terminal:
+.\scripts\review-local.ps1 -Action Frontend
+```
+
+Open `http://127.0.0.1:5174/login`. Read the generated `.review/local.env` privately on your machine for the invitation key and each distinct review password; never paste/publish this file. Review identities are `donor`, `ngo`, `pending` and `admin` at `review.medbridge.invalid`. Public local demo credentials are not accepted. The launcher generates secrets only for local rehearsal, protects the file and restores child environment settings afterward. Refresh/logout clears the browser key/JWT. No cloud URL or credential is implied.
+
+Run `mvn -B -ntp -Dtest=ReviewMySqlIT test` from the backend for the disposable Testcontainers review suite; it needs port 13307 free. Stop the rehearsal container before running that suite, after confirming its label/name; do not stop/delete the original database container. The suite uses an injected fixed test clock, so cutoff regression tests remain repeatable without an application clock override. Full `mvn verify` includes review policy unit tests; both CI workflows are prepared to exercise review boundaries. Nothing has run on GitHub until separately pushed.
+
+Hosting and Aiven restoration require separate approval; follow [DEPLOYMENT-GUIDE.md](DEPLOYMENT-GUIDE.md), not the historical Phase 2 instructions.
