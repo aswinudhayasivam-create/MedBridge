@@ -8,6 +8,7 @@ import com.medbridge.repository.NgoProfileRepository;
 import com.medbridge.repository.UserRepository;
 import com.medbridge.security.JwtService;
 import com.medbridge.config.RegistrationPolicy;
+import com.medbridge.config.DemoIdentityPolicy;
 import com.medbridge.config.LocalAuthSafetyConfigurationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,12 +24,14 @@ class AuthServiceTest {
     private final PasswordEncoder encoder = mock(PasswordEncoder.class);
     private final JwtService jwt = mock(JwtService.class);
     private final AuthService auth = new AuthService(users, ngos, encoder, jwt,
-        new RegistrationPolicy(LocalAuthSafetyConfigurationTest.isolated().withProperty("app.allow-registration", "true")));
+        new RegistrationPolicy(LocalAuthSafetyConfigurationTest.isolated().withProperty("app.allow-registration", "true")),
+        new DemoIdentityPolicy(LocalAuthSafetyConfigurationTest.isolated()));
 
     @Test
     void disabledRegistrationCannotReadOrWriteAccounts() {
         AuthService disabled = new AuthService(users, ngos, encoder, jwt,
-            new RegistrationPolicy(new org.springframework.mock.env.MockEnvironment()));
+            new RegistrationPolicy(new org.springframework.mock.env.MockEnvironment()),
+            new DemoIdentityPolicy(new org.springframework.mock.env.MockEnvironment()));
         RegisterRequest request = new RegisterRequest("Fictional Donor", "donor@example.test",
             java.util.UUID.randomUUID().toString(), Role.DONOR, null, null, null, null, null);
         ApiException error = assertThrows(ApiException.class, () -> disabled.register(request));
@@ -51,7 +54,8 @@ class AuthServiceTest {
         String raw = java.util.UUID.randomUUID().toString();
         var bcrypt = new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder(4);
         AuthService service = new AuthService(users, ngos, bcrypt, jwt,
-            new RegistrationPolicy(LocalAuthSafetyConfigurationTest.isolated().withProperty("app.allow-registration", "true")));
+            new RegistrationPolicy(LocalAuthSafetyConfigurationTest.isolated().withProperty("app.allow-registration", "true")),
+        new DemoIdentityPolicy(LocalAuthSafetyConfigurationTest.isolated()));
         when(users.saveAndFlush(any())).thenAnswer(invocation -> invocation.getArgument(0));
         var result = service.register(new RegisterRequest("Fictional NGO", "ngo@example.test", raw,
             Role.NGO, null, null, "Fictional NGO", "FICTIONAL-LICENSE", "Test Area"));
