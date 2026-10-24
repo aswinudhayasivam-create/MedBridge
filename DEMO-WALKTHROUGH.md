@@ -2,7 +2,7 @@
 
 All accounts, labels, locations and collections are fictional. No medical/regulatory clearance or real redistribution is represented.
 
-1. Explain the boundary: React dev server on 127.0.0.1:5173 â†’ Java 17 Spring Boot on 127.0.0.1:8080 â†’ isolated MySQL on 127.0.0.1:13306. Public registration remains false. Production build guards remove the demo entry and public demo credentials.
+1. Explain the boundary: React dev server on 127.0.0.1:5173 → Java 17 Spring Boot on 127.0.0.1:8080 → isolated MySQL on 127.0.0.1:13306. Public registration remains false. Production build guards remove the demo entry and public demo credentials.
 2. Select Donor on Login; show that autofill is not automatic sign-in. Click Login as Meera. Dashboard counts come from MySQL rather than the PDF illustrations.
 3. Start New donation. Enter a synthetic name, form, category, quantity/unit, batch and expiry at least three months away. Demonstrate the native picker or manual date fallback.
 4. Download and upload the synthetic label. Explain the image validation and honest manual OCR fallback. Confirm the name/batch/expiry explicitly.
