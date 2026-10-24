@@ -2,7 +2,7 @@
 
 All accounts, labels, locations and collections are fictional. No medical/regulatory clearance or real redistribution is represented.
 
-1. Explain the boundary: React dev server on 127.0.0.1:5173 → Java 17 Spring Boot on 127.0.0.1:8080 → isolated MySQL on 127.0.0.1:13306. Public registration remains false. Production build guards remove the demo entry and public demo credentials.
+1. Explain the boundary: React dev server on 127.0.0.1:5173 â†’ Java 17 Spring Boot on 127.0.0.1:8080 â†’ isolated MySQL on 127.0.0.1:13306. Public registration remains false. Production build guards remove the demo entry and public demo credentials.
 2. Select Donor on Login; show that autofill is not automatic sign-in. Click Login as Meera. Dashboard counts come from MySQL rather than the PDF illustrations.
 3. Start New donation. Enter a synthetic name, form, category, quantity/unit, batch and expiry at least three months away. Demonstrate the native picker or manual date fallback.
 4. Download and upload the synthetic label. Explain the image validation and honest manual OCR fallback. Confirm the name/batch/expiry explicitly.
@@ -27,3 +27,8 @@ All accounts, labels, locations and collections are fictional. No medical/regula
 - Why encrypt as well as hash the code? BCrypt verifies attempts; authenticated encryption permits donor-only redisplay after sign-out/restart without plaintext database storage.
 - What if two NGOs compete? The medicine row is locked and the reserved counter is updated conditionally inside the acceptance transaction.
 - What is not production-ready? Public account launch, real medicine compliance/verification, production operational controls and session revocation remain separate work. This branch must not be deployed as an activated public service.
+
+
+## Protected review evaluation
+
+The same donor/NGO/admin steps above apply to the separately guarded review entry, using private review identities and an invitation key rather than the public local selector. In the local rehearsal use port 5174; after an approved deployment use only the privately supplied protected URL. Demonstrate that missing invitation, the original local identities, pending NGO actions and expired review access are rejected. Explain that the server deadline is midnight after October 26 in Asia/Kolkata and that a valid JWT cannot extend it. Never reveal the invitation, passwords, live handoff code or database configuration in a recording. State explicitly whether the demonstration is a local rehearsal or the fully verified hosted environment; current hosted status is pending.
