@@ -20,6 +20,7 @@ jobs:
     env:
       VITE_ENABLE_AUTH_SUBMISSIONS: 'false'
       VITE_ENABLE_DEMO_WORKFLOWS: 'false'
+      VITE_ENABLE_REVIEW: 'false'
       VITE_API_BASE_URL: ''
     steps:
       - uses: actions/checkout@v4
