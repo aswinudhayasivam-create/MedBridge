@@ -1,6 +1,7 @@
 package com.medbridge.demo;
 
 import com.medbridge.config.LocalAuthSafetyConfiguration;
+import com.medbridge.review.ReviewModePolicy;
 import com.medbridge.exception.ApiException;
 import java.util.Map;
 import org.springframework.core.env.Environment;
@@ -12,10 +13,16 @@ import org.springframework.stereotype.Component;
 public class DemoSafety {
     private final Environment environment;
     private final JdbcTemplate db;
-    public DemoSafety(Environment environment,JdbcTemplate db){this.environment=environment;this.db=db;}
+    private final ReviewModePolicy review;
+    public DemoSafety(Environment environment,JdbcTemplate db,ReviewModePolicy review){this.environment=environment;this.db=db;this.review=review;}
     public Map<String,Object> actor(String email,String... roles) {
-        if(!environment.getProperty("app.demo-workflows",Boolean.class,false)) throw new ApiException(HttpStatus.NOT_FOUND,"Demo workflows are disabled.");
-        LocalAuthSafetyConfiguration.requireIsolated(environment);
+        if(review.requested()) {
+            if(!review.ready()) throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE,"Review access is unavailable.");
+            if(!review.isReviewIdentity(email)) throw new ApiException(HttpStatus.UNAUTHORIZED,"Authentication required.");
+        } else {
+            if(!environment.getProperty("app.demo-workflows",Boolean.class,false)) throw new ApiException(HttpStatus.NOT_FOUND,"Demo workflows are disabled.");
+            LocalAuthSafetyConfiguration.requireIsolated(environment);
+        }
         var users=db.queryForList("SELECT user_id,name,email,role,verified,latitude,longitude FROM users WHERE email=?",email);
         if(users.size()!=1) throw new ApiException(HttpStatus.UNAUTHORIZED,"Authentication required.");
         var user=users.get(0);
