@@ -131,3 +131,65 @@ Actual browser captures are provided under `docs/demo-screenshots/`; filenames d
 Each changed file, including each PDF, screenshot, configuration and documentation file, is committed separately. Original Phase 4 history is preserved. Use `git log --reverse --name-only 5fc9e58..HEAD` to inspect the exact sequence; the final handoff includes a full SHA/path manifest. The report's own commit cannot contain its own final hash, so obtain final HEAD with `git rev-parse HEAD`.
 
 Stop here for review. Any push must be separately approved and target only `feature/phase-5-8-demo-mvp`; an automatic preview must keep auth/demo guards disabled. No push, merge, production deployment, hosted account activation, Render/Vercel change or Aiven power-on/database modification is authorized by this report.
+
+
+## Final demo identity security fix — 24 October 2026
+
+This follow-up supersedes the earlier 30-test backend total and resolves the Phase 5–8 source-code hosted-credential blocker. The complete prototype was preserved, not rebuilt. The 62 original Phase 5–8 commits through `4f7904ccfd26fd84da4debe23187b2e4ae4fe5a4` retain their exact SHAs. No push, merge, deployment, Render/Vercel change, Aiven access/power-on, production login attempt or production-user creation occurred.
+
+### Protected paths and fail-closed behavior
+
+`DemoIdentityPolicy` covers every email whose trimmed, case-normalized domain is `@medbridge.test`, including identities beyond the four fixtures. It denies these identities by default. Allowance requires the unchanged `LocalAuthSafetyConfiguration.requireIsolated(environment)` to verify the complete exact profile, server bind, JDBC URL, driver, schema/data initialization and datasource override requirements. A profile or flag alone cannot allow access; uncertain or exceptional configuration denies access without logging internal details.
+
+- `AuthService.login`: checks the submitted identity before account lookup or password verification, then checks the stored identity before token issuance. Denial uses the same generic 401 `Invalid email or password` response as invalid credentials.
+- `AuthService.register`: retains registration-disabled policy as its first check, and also applies the identity policy before creating an account or issuing a registration token. Public ADMIN registration remains disabled.
+- `JwtAuthenticationFilter`: checks the verified token subject before database lookup and the stored identity before establishing authentication. A correctly signed, previously issued demo JWT cannot authenticate outside the verified local environment; signing-key continuity does not bypass the policy.
+- `AuthService.me`: checks both lookup and stored identities before returning a profile. No alternative cookie/form/session authentication was added; the existing stateless security chain remains.
+- Phase 5–8 demo actions continue using their existing server-side full-isolation, role, current verification and ownership checks in `DemoSafety`. They do not introduce a separate password/JWT authentication implementation.
+
+Non-demo accounts retain their existing login, JWT and profile behavior. Backend registration and demo flags still default to false. No frontend, dependency, schema, launcher, CI, PDF or styling changes were needed for this fix.
+
+### Updated validation
+
+| Check | Result |
+| --- | --- |
+| Java 17 `mvn -B -ntp verify` | 102 passed; zero failures/errors/skips; backend packaged |
+| New identity security regression class | 71 passed: 64 hosted-like identity/configuration cases, four isolated local cases, and uncertain-config/non-demo/stored-identity checks |
+| Protected HTTP endpoints | Additional MockMvc test rejects real signed demo tokens on profile/admin endpoints for all four identities and mixed-case variants (16 requests) |
+| Real MySQL `DemoMySqlIT` | 3 passed, including all four seeded account logins, complete REST journey, role/ownership/expiry/attempt limits and concurrency |
+| Original `LocalAuthMySqlIT` | 1 passed; original registration and authentication behavior retained |
+| Testcontainers schema checks | Passed in the full suite and both integration launcher reruns |
+| Vitest | 43 passed across six files |
+| Frontend safety suite | 15 passed, including compiled hosted-build demo denial |
+| `npm audit` and `npm audit --omit=dev` | Zero vulnerabilities in both |
+| Production build | Passed |
+| Deliberately misconfigured full build | In-memory build passed with auth/demo flags true, local-auth mode and development NODE_ENV; none of the four demo emails/passwords occur in emitted code/assets |
+| Browser → Spring Boot → MySQL | Fresh complete donor/admin/NGO journey passed after restarting into the patched backend |
+| Restart persistence | Accounts, verification, medicines/reservations, completed requests and notification count unchanged after restart |
+
+Hosted-like tests instantiate the real policy, authentication service, BCrypt checks and JWT signing/verification with mocked repositories and mock environments; there is no DataSource or external HTTP authentication client in those tests. Remote-looking JDBC strings are inert configuration test data. Real database integration uses only the existing isolated loopback MySQL and disposable local Testcontainers schema infrastructure. No production database records are needed to prove denial.
+
+The fresh browser run logged in all four accounts, submitted `Paracetamol 500 mg · Security retest` with a generated synthetic label, approved it as the fictional admin, confirmed pending-NGO browse restrictions, requested two of four strips as GreenCross, accepted as Meera, scheduled a simulated collection, retrieved the donor-only code privately, rejected an incorrect code, then completed with the correct code. Donor and NGO dashboards each showed two persisted simulated completions, including the original demonstration. NGO completion notifications were verified. Captured browser console warnings/errors were empty.
+
+The browser upload automation initially stalled beyond its requested timeout and the one-hour in-memory session correctly expired. The walkthrough was restarted with a fresh login, and a nonblocking upload call completed; the entire new journey then succeeded through the UI. No session-security setting or application UI was weakened to work around the tool delay. Synthetic abandoned image records may remain, as previously documented. Additional verification screenshots and test logs remain in the local `security-fix` evidence directory outside Git; the original committed screenshot set is preserved.
+
+### Release boundary
+
+The local Phase 5–8 branch is ready for a separately approved feature-branch push after the final clean-history review. It has not run GitHub Actions because it has not been pushed. The existing Phase 5 workflow triggers remain present and unchanged.
+
+This policy protects the new Phase 5–8 backend code when run in a hosted-like environment. **It has not been deployed to the old Phase 2 Render backend, and no claim is made that the old backend has acquired this protection.** Existing production-release configuration/compliance blockers remain separate. Do not infer permission to deploy, merge, enable hosted authentication or access Aiven.
+
+
+Implementation HEAD: `a9d04fd330db7362e6e34f5dba94f2745ea253e7`.
+
+| New security commit | Exactly one changed file |
+| --- | --- |
+| `2b3310b1e03dc69a7170e3559769b8b75c54ddad` | `MedBridge-Phase-1/medbridge/backend/src/main/java/com/medbridge/config/DemoIdentityPolicy.java` |
+| `1f8a88937412ba38dd4e1590289dd63c8ea82f3a` | `MedBridge-Phase-1/medbridge/backend/src/main/java/com/medbridge/service/AuthService.java` |
+| `c837c8454324699c970c3070595ec69898d2e1a9` | `MedBridge-Phase-1/medbridge/backend/src/main/java/com/medbridge/security/JwtAuthenticationFilter.java` |
+| `fa493b2437ab8a8826980a3b6c6b3c537f78a010` | `MedBridge-Phase-1/medbridge/backend/src/test/java/com/medbridge/service/AuthServiceTest.java` |
+| `0f2c7dca7f3bf2f4e4dc1bf0af7eb66791e27c6c` | `MedBridge-Phase-1/medbridge/backend/src/test/java/com/medbridge/security/JwtAuthenticationFilterTest.java` |
+| `02a8687671ca1e6be4749e403ef4d8fc1c89a117` | `MedBridge-Phase-1/medbridge/backend/src/test/java/com/medbridge/security/AuthWebSecurityTest.java` |
+| `a9d04fd330db7362e6e34f5dba94f2745ea253e7` | `MedBridge-Phase-1/medbridge/backend/src/test/java/com/medbridge/security/DemoIdentityAuthenticationTest.java` |
+
+The final documentation commit changes only this report. Its own SHA (and final branch HEAD at handoff) is available with `git log -1 --format=%H -- PHASE5-8-DEMO-REPORT.md` and is recorded in the final handoff manifest; a commit cannot embed its own hash. All eight new commits must remain separate.
