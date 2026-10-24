@@ -6,6 +6,7 @@ import com.medbridge.repository.*;
 import com.medbridge.security.JwtService;
 import com.medbridge.exception.ApiException;
 import com.medbridge.config.RegistrationPolicy;
+import com.medbridge.config.DemoIdentityPolicy;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,13 +20,15 @@ public class AuthService {
     private final PasswordEncoder passwords;
     private final JwtService jwt;
     private final RegistrationPolicy registration;
-    public AuthService(UserRepository users, NgoProfileRepository ngos, PasswordEncoder passwords, JwtService jwt, RegistrationPolicy registration) {
+    private final DemoIdentityPolicy demoIdentities;
+    public AuthService(UserRepository users, NgoProfileRepository ngos, PasswordEncoder passwords, JwtService jwt, RegistrationPolicy registration, DemoIdentityPolicy demoIdentities) {
         this.users=users; this.ngos=ngos; this.passwords=passwords; this.jwt=jwt;
-        this.registration=registration;
+        this.registration=registration; this.demoIdentities=demoIdentities;
     }
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         registration.requireRegistration();
+        demoIdentities.requireAllowed(request.email());
         if (request.role()==Role.ADMIN) throw new ApiException(HttpStatus.BAD_REQUEST,"Admin registration is disabled");
         String email=request.email().trim().toLowerCase(Locale.ROOT);
         if (users.existsByEmailIgnoreCase(email)) throw new ApiException(HttpStatus.CONFLICT,"Email already registered");
@@ -52,16 +55,20 @@ public class AuthService {
     }
     @Transactional(readOnly=true)
     public AuthResponse login(LoginRequest request) {
+        demoIdentities.requireAllowed(request.email());
         User user=users.findByEmailIgnoreCase(request.email().trim())
             .orElseThrow(()->new ApiException(HttpStatus.UNAUTHORIZED,"Invalid email or password"));
+        demoIdentities.requireAllowed(user.getEmail());
         if (!passwords.matches(request.password(),user.getPasswordHash()))
             throw new ApiException(HttpStatus.UNAUTHORIZED,"Invalid email or password");
         return new AuthResponse(jwt.generate(user),"Bearer",jwt.expirySeconds(),UserResponse.from(user));
     }
     @Transactional(readOnly=true)
     public UserResponse me(String email) {
-        return users.findByEmailIgnoreCase(email).map(UserResponse::from)
-            .orElseThrow(()->new ApiException(HttpStatus.UNAUTHORIZED,"User not found"));
+        demoIdentities.requireAllowed(email);
+        return users.findByEmailIgnoreCase(email)
+            .filter(user -> demoIdentities.allows(user.getEmail())).map(UserResponse::from)
+            .orElseThrow(()->new ApiException(HttpStatus.UNAUTHORIZED,"Authentication required"));
     }
     private boolean blank(String value) { return value==null || value.isBlank(); }
 }
