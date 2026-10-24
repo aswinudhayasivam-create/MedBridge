@@ -83,6 +83,7 @@ jobs:
           APP_ALLOW_REGISTRATION=true mvn -B -ntp -Dtest=LocalAuthMySqlIT test
           if [[ "$GITHUB_REF_NAME" == feature/phase-5-* ]]; then
             APP_ALLOW_REGISTRATION=false APP_DEMO_WORKFLOWS=true mvn -B -ntp -Dtest=DemoMySqlIT test
+            APP_ALLOW_REGISTRATION=false APP_DEMO_WORKFLOWS=false mvn -B -ntp -Dtest=ReviewMySqlIT test
           fi
       - name: Check Docker startup script syntax
         run: sh -n docker-entrypoint.sh
