@@ -1,4 +1,4 @@
-# Protected online review deployment guide â€” not executed
+# Protected online review deployment guide — not executed
 
 **STOP before each cloud/configuration/database action and obtain separate approval.** No service, environment variable, CA file, database, domain or deployment has been changed by this preparation. No hosted review credentials or live review URL are published.
 
@@ -79,8 +79,8 @@ Enter values privately in the dedicated Render service, never GitHub/chat/README
 | `REVIEW_DB_HOST` | Exact approved dedicated Aiven hostname, no protocol |
 | `REVIEW_DB_URL` | `jdbc:mysql://<approved-host>:<port>/medbridgereview20261026?sslMode=VERIFY_IDENTITY&serverTimezone=UTC` |
 | `REVIEW_DB_USERNAME` / `REVIEW_DB_PASSWORD` | Dedicated `mb_review_...` DML-only user / distinct private random password (>=24 characters) |
-| `REVIEW_ACCESS_KEY` / `REVIEW_JWT_SECRET` | Distinct private random values, 48â€“128 characters, sufficient character diversity |
-| `REVIEW_DONOR_PASSWORD`, `REVIEW_NGO_PASSWORD`, `REVIEW_PENDING_PASSWORD`, `REVIEW_ADMIN_PASSWORD` | Distinct private random passwords, 24â€“128 characters; never the public local passwords |
+| `REVIEW_ACCESS_KEY` / `REVIEW_JWT_SECRET` | Distinct private random values, 48–128 characters, sufficient character diversity |
+| `REVIEW_DONOR_PASSWORD`, `REVIEW_NGO_PASSWORD`, `REVIEW_PENDING_PASSWORD`, `REVIEW_ADMIN_PASSWORD` | Distinct private random passwords, 24–128 characters; never the public local passwords |
 | `REVIEW_FRONTEND_ORIGIN` | One exact HTTPS review origin, no path/trailing slash, query, wildcard or credentials |
 | `APP_ALLOW_REGISTRATION` / `APP_DEMO_WORKFLOWS` | `false` / `false` |
 | `SQL_INIT_MODE` | `never`; review profile also requires effective initialization mode `never` |
@@ -95,14 +95,18 @@ Preserve Vercel Authentication/deployment protection. Verify the intended evalua
 
 ## Verification before exposure
 
-Record exact backend/frontend Git SHAs. Confirm TLS hostname verification and private DB grants/marker, readiness 200, no real data, public registration denied, original four local identities denied, missing invitation denied, wrong role/owner denied, rate limiting, pending NGO restrictions and server cutoff. Run the entire donor â†’ admin â†’ NGO â†’ donor â†’ code â†’ simulated completion journey through the **hosted browser/API/MySQL**, then restart/redeploy the review backend and verify persistence. Review network/console errors, responsive widths and absence of public local credentials/secrets in compiled assets. Keep working reviewer credentials/URL private until the owner approves their exposure. Local rehearsal results alone do not establish online success.
+Record exact backend/frontend Git SHAs. Confirm TLS hostname verification and private DB grants/marker, readiness 200, no real data, public registration denied, original four local identities denied, missing invitation denied, wrong role/owner denied, rate limiting, pending NGO restrictions and server cutoff. Run the entire donor → admin → NGO → donor → code → simulated completion journey through the **hosted browser/API/MySQL**, then restart/redeploy the review backend and verify persistence. Review network/console errors, responsive widths and absence of public local credentials/secrets in compiled assets. Keep working reviewer credentials/URL private until the owner approves their exposure. Local rehearsal results alone do not establish online success.
 
 ## Fail-closed rollback, containment and safe reset
 
-Rollback only to a verified registration-protected, review-guarded build compatible with the dedicated schema and deadline. **Never blindly roll back to Phase 2.** Keep auto-deploy off. Retain the dedicated database and backup. If no safe build can run, obtain approval to suspend the review web service in Render (Service â†’ Settings â†’ Suspend service); access becomes unavailable. Do not delete the service, weaken protection, reconnect the old backend, extend the deadline or enable registration to recover availability. Verify from outside that protected data/auth endpoints are unavailable. Recovery requires proof of exact source/config/CA/database/expiry, readiness, negative security tests and a new complete hosted journey before approved re-exposure.
+Rollback only to a verified registration-protected, review-guarded build compatible with the dedicated schema and deadline. **Never blindly roll back to Phase 2.** Keep auto-deploy off. Retain the dedicated database and backup. If no safe build can run, obtain approval to suspend the review web service in Render (Service → Settings → Suspend service); access becomes unavailable. Do not delete the service, weaken protection, reconnect the old backend, extend the deadline or enable registration to recover availability. Verify from outside that protected data/auth endpoints are unavailable. Recovery requires proof of exact source/config/CA/database/expiry, readiness, negative security tests and a new complete hosted journey before approved re-exposure.
 
 Reset is a separately approved offline operator procedure, never an HTTP endpoint. First suspend access and take/verify a **review-only** backup. Privately verify `DATABASE()`, marker/version/expiry, grants and absence of non-review identities. In a transaction on the dedicated database, clear only fictional workflow rows in dependency order: `demo_events`, `demo_request_details`, `requests`, `demo_medicine_details`, `medicines`, `demo_photos`, `notifications`; retain account/password/profile/marker rows. Reconcile fictional NGO verification/application state deliberately, commit only after checks, then restart and retest. Do not disable foreign keys, drop schemas/volumes, run broad deletes on another database, or automate a reset against a URL chosen from old environment files. Preserve evidence/backup for rollback.
 
 At cutoff, application access fails closed automatically; approved operator suspension and credential revocation can follow. Data retention/deletion and Aiven shutdown remain separate approved actions, not an automatic side effect of expiry.
 
 The fixed review database name intentionally contains no SQL wildcard characters, so database-level grants cannot accidentally match another name through an underscore pattern. See the [MySQL GRANT reference](https://dev.mysql.com/doc/refman/8.0/en/grant.html).
+
+For consistent illustrative schedule times, configure the dedicated review JVM timezone as Asia/Kolkata at the approved deployment, retaining existing memory/error options (append `-Duser.timezone=Asia/Kolkata` to the reviewed `JAVA_TOOL_OPTIONS`). Verify displayed timestamps through the hosted browser. The cutoff uses an absolute server `Instant`, independent of this display timezone.
+
+Before any separately approved containment action, confirm that the current Render service exposes the Suspend control and that the operator has permission. Do not substitute a paid maintenance option or delete the service. Review the current [rollback configuration semantics](https://render.com/docs/rollbacks): rollback does not reverse database changes, environment-group effects need review, and auto-deploy must be rechecked.
