@@ -4,3 +4,6 @@
 **/.env.local
 **/.env.*.local
 *.log
+
+# Generated private local review fixture credentials; never publish.
+/.review/
