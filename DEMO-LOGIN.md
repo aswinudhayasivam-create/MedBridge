@@ -16,3 +16,8 @@ Start using `DEMO-SETUP.md`, open `http://127.0.0.1:5173/login`, choose a select
 The demo selector module is imported only by the development-only entry. Production Vite builds must contain neither these credentials nor an enabled demo entry, even with accidentally true environment flags. Never deploy this branch without a separately approved review and push. There is no date-triggered activation after October 26.
 
 All verification decisions are fictional. No medicine, prescription, medical information, real address or production account belongs in this demonstration.
+
+
+## Separate protected online review preparation
+
+The four identities above remain local-only under `DemoIdentityPolicy`, even in review mode. Separate review accounts use the reserved domain `@review.medbridge.invalid`, private randomly generated passwords and a private invitation gate. None of their working passwords or a hosted review URL is published. The local rehearsal generates only test fixtures in ignored `.review/local.env`; these are not deployed credentials. Review access expires server-side at midnight after October 26, 2026 Asia/Kolkata. See [deployment approvals](DEPLOYMENT-GUIDE.md) and [security boundaries](SECURITY-AND-DEMO-LIMITATIONS.md).
