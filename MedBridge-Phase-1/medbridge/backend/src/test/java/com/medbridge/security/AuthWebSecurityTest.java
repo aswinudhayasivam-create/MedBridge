@@ -3,6 +3,8 @@ package com.medbridge.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.medbridge.config.RegistrationPolicy;
 import com.medbridge.config.DemoIdentityPolicy;
+import com.medbridge.review.ReviewModePolicy;
+import com.medbridge.review.ReviewAccessFilter;
 import com.medbridge.config.SecurityConfig;
 import com.medbridge.controller.AuthController;
 import com.medbridge.controller.RoleDemoController;
@@ -28,7 +30,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest({AuthController.class, RoleDemoController.class})
-@Import({SecurityConfig.class, JwtAuthenticationFilter.class, RegistrationPolicy.class, DemoIdentityPolicy.class})
+@Import({SecurityConfig.class, JwtAuthenticationFilter.class, RegistrationPolicy.class, DemoIdentityPolicy.class, ReviewModePolicy.class, ReviewAccessFilter.class})
 @TestPropertySource(properties = {"app.frontend-url=http://127.0.0.1:5173", "app.allow-registration=false"})
 class AuthWebSecurityTest {
     @Autowired MockMvc mvc;
