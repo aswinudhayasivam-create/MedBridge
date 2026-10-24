@@ -2,9 +2,9 @@
 
 Base: `5fc9e58ff5050a0f9f59a044921141036e533648` (Phase 4 history preserved).
 
-The first 70 commits are the unchanged original Phase 5–8 implementation and identity hardening. The next 40 prepare the guarded review environment and documentation. Every listed commit changes exactly one file. No push, merge or cloud deployment has been performed.
+The first 70 commits are the unchanged original Phase 5–8 implementation and identity hardening. Subsequent commits prepare the guarded review environment, documentation, real screenshots, and manifest, including final documentation encoding corrections. Every listed commit changes exactly one file. No push, merge or cloud deployment has been performed.
 
-This file is itself committed separately as the final one-file commit. Its SHA cannot be embedded in its own contents; obtain it with `git log -1 --format=%H -- COMMIT-MANIFEST.md`. The complete handoff manifest outside the repository also includes that final SHA. The final branch therefore contains **111 commits after the Phase 4 base: 70 preserved + 41 new**.
+This manifest refresh is itself the final separate single-file commit. Its SHA cannot be embedded in its own contents; obtain it with `git log -1 --format=%H -- COMMIT-MANIFEST.md`. The complete external handoff manifest includes that final SHA. The final branch contains **116 commits after Phase 4: 70 preserved + 46 new**. The table records the 115 commits before this final refresh; the earlier manifest commit remains intact.
 
 | # | Full commit SHA | Commit message | Exactly one changed file | Purpose |
 | --- | --- | --- | --- | --- |
@@ -118,3 +118,8 @@ This file is itself committed separately as the final one-file commit. Its SHA c
 | 108 | `9cb00e0f7e29ab6b3b2662244e0d36d917d12d19` | Report actual local tests and unresolved hosted infrastructure checks | `PROJECT-STATUS.md` | Report actual local tests and unresolved hosted infrastructure checks. |
 | 109 | `8bcf2d7b7a2697e2007c473ef4c9c785cb5aea99` | Replace outdated Phase 1 description with current project navigation | `MedBridge-Phase-1/medbridge/README.md` | Replace outdated Phase 1 description with current project navigation. |
 | 110 | `cede0f096be12b2bfeefd3e3bede0fa557c53ebd` | Present full-stack project workflows evidence and local-only demo credentials | `README.md` | Present full-stack project workflows evidence and local-only demo credentials. |
+| 111 | `9eb7513191d2e70d96098b1126da08c250aa8b05` | Record preserved history and single-file review preparation commits | `COMMIT-MANIFEST.md` | Record preserved history and single-file review preparation commits. |
+| 112 | `5d92ef2ae2044e5a71edb36ac2a6eca6fa7b072a` | Correct Markdown punctuation encoding in project overview | `README.md` | Correct Markdown punctuation encoding in project overview. |
+| 113 | `8eff2b84924a8368101ad0ba530094c3250c3306` | Correct Markdown punctuation encoding in review walkthrough | `DEMO-WALKTHROUGH.md` | Correct Markdown punctuation encoding in review walkthrough. |
+| 114 | `95081b4d3fdfe08fc18465bc8100baed8ccadb9b` | Correct Markdown punctuation encoding in deployment and recovery guidance | `DEPLOYMENT-GUIDE.md` | Correct Markdown punctuation encoding in deployment and recovery guidance. |
+| 115 | `d17eaddcd9ba998f22a2687ae54cd550c4575aee` | Correct Markdown punctuation encoding in verification report | `PROJECT-STATUS.md` | Correct Markdown punctuation encoding in verification report. |
