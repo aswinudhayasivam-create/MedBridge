@@ -1,7 +1,7 @@
 name: MedBridge Phase 3 frontend checks
 on:
   push:
-    branches: ['feature/phase-3-*', 'feature/phase-4-*']
+    branches: ['feature/phase-3-*', 'feature/phase-4-*', 'feature/phase-5-*']
     paths:
       - 'MedBridge-Phase-1/medbridge/frontend/**'
       - '.github/workflows/medbridge-frontend-ci.yml'
@@ -19,6 +19,7 @@ jobs:
         working-directory: MedBridge-Phase-1/medbridge/frontend
     env:
       VITE_ENABLE_AUTH_SUBMISSIONS: 'false'
+      VITE_ENABLE_DEMO_WORKFLOWS: 'false'
       VITE_API_BASE_URL: ''
     steps:
       - uses: actions/checkout@v4
