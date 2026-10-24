@@ -1,6 +1,6 @@
 # Project status and hosting readiness
 
-Verified locally: 24 October 2026. Working branch: `feature/phase-5-8-demo-mvp`. Starting HEAD for this preparation: `0c2527afba61e49e7f51ba9345b2ccf64143556c`. All 70 original Phase 5â€“8 commits and original Phase 4 history are preserved. A final full-SHA single-file commit manifest accompanies the handoff.
+Verified locally: 24 October 2026. Working branch: `feature/phase-5-8-demo-mvp`. Starting HEAD for this preparation: `0c2527afba61e49e7f51ba9345b2ccf64143556c`. All 70 original Phase 5–8 commits and original Phase 4 history are preserved. A final full-SHA single-file commit manifest accompanies the handoff.
 
 ## Environment status
 
@@ -8,7 +8,7 @@ Verified locally: 24 October 2026. Working branch: `feature/phase-5-8-demo-mvp`.
 | --- | --- |
 | Original local demo | Verified; original four accounts, persisted history, pending restrictions and complete REST integration retained |
 | Hosted-like loopback review rehearsal | Verified locally against a separate temporary database; not deployed |
-| Hosted Vercel â†’ Render â†’ MySQL review | **Pending approval and infrastructure; not verified online** |
+| Hosted Vercel → Render → MySQL review | **Pending approval and infrastructure; not verified online** |
 | Existing Phase 2 / protected Render | Not modified; no claim of current health or new deployed protection |
 | Aiven recovery | Not accessed, powered on or modified |
 | Vercel production | Not modified |
@@ -25,7 +25,7 @@ Verified locally: 24 October 2026. Working branch: `feature/phase-5-8-demo-mvp`.
 | npm audit / npm audit --omit=dev | 0 vulnerabilities in both |
 | Default production / explicit review builds | Passed, including deliberately misconfigured flag regressions |
 | Existing local browser journey | All four public local logins, donor history, admin overview, pending restrictions and completed NGO timelines verified; complete local REST journey passed |
-| Review browser journey / restart persistence | Fresh donor â†’ admin â†’ NGO â†’ donor â†’ code â†’ completion and notifications passed; fresh login and unchanged database snapshot after restart |
+| Review browser journey / restart persistence | Fresh donor → admin → NGO → donor → code → completion and notifications passed; fresh login and unchanged database snapshot after restart |
 | Required viewport widths | 320, 375, 393, 430, 768, 1280 px; 120 checks across 20 shared review pages, zero horizontal overflow; original PDF/CSS evidence preserved |
 | Markdown relative links / CI lint / secret and history review | Relative links and actionlint passed; private values excluded; final single-file history checked at handoff |
 
@@ -37,7 +37,7 @@ Local code/documentation readiness: Ready for review and a separately approved p
 
 ## Documents
 
-[Root overview](README.md) Â· [local credentials](DEMO-LOGIN.md) Â· [setup](DEMO-SETUP.md) Â· [walkthrough](DEMO-WALKTHROUGH.md) Â· [architecture](SYSTEM-ARCHITECTURE.md) Â· [API](API-DOCUMENTATION.md) Â· [deployment](DEPLOYMENT-GUIDE.md) Â· [limitations](SECURITY-AND-DEMO-LIMITATIONS.md).
+[Root overview](README.md) · [local credentials](DEMO-LOGIN.md) · [setup](DEMO-SETUP.md) · [walkthrough](DEMO-WALKTHROUGH.md) · [architecture](SYSTEM-ARCHITECTURE.md) · [API](API-DOCUMENTATION.md) · [deployment](DEPLOYMENT-GUIDE.md) · [limitations](SECURITY-AND-DEMO-LIMITATIONS.md).
 
 Previous detailed local/PDF evidence remains in [PHASE5-8-DEMO-REPORT.md](PHASE5-8-DEMO-REPORT.md). This preparation preserves the original screenshot/PDF set and the completed functional implementation. Additional local rehearsal screenshots are linked in the final handoff; they do not represent a hosted deployment.
 
