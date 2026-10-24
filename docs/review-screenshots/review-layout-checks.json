@@ -1,0 +1,702 @@
+[
+  {
+    "label": "Private review login",
+    "rows": [
+      {
+        "overflow": false,
+        "scrollWidth": 320,
+        "width": 320
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 375,
+        "width": 375
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 393,
+        "width": 393
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 430,
+        "width": 430
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 768,
+        "width": 768
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 1280,
+        "width": 1280
+      }
+    ]
+  },
+  {
+    "label": "Review donor dashboard",
+    "rows": [
+      {
+        "overflow": false,
+        "scrollWidth": 305,
+        "width": 320
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 360,
+        "width": 375
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 378,
+        "width": 393
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 415,
+        "width": 430
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 753,
+        "width": 768
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 1280,
+        "width": 1280
+      }
+    ]
+  },
+  {
+    "label": "Review donation basics",
+    "rows": [
+      {
+        "overflow": false,
+        "scrollWidth": 305,
+        "width": 320
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 360,
+        "width": 375
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 378,
+        "width": 393
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 415,
+        "width": 430
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 768,
+        "width": 768
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 1280,
+        "width": 1280
+      }
+    ]
+  },
+  {
+    "label": "Review synthetic label confirmation",
+    "rows": [
+      {
+        "overflow": false,
+        "scrollWidth": 305,
+        "width": 320
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 360,
+        "width": 375
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 378,
+        "width": 393
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 415,
+        "width": 430
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 753,
+        "width": 768
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 1265,
+        "width": 1280
+      }
+    ]
+  },
+  {
+    "label": "Review condition declaration",
+    "rows": [
+      {
+        "overflow": false,
+        "scrollWidth": 305,
+        "width": 320
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 375,
+        "width": 375
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 393,
+        "width": 393
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 430,
+        "width": 430
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 768,
+        "width": 768
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 1280,
+        "width": 1280
+      }
+    ]
+  },
+  {
+    "label": "Review final submission",
+    "rows": [
+      {
+        "overflow": false,
+        "scrollWidth": 305,
+        "width": 320
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 360,
+        "width": 375
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 378,
+        "width": 393
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 415,
+        "width": 430
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 768,
+        "width": 768
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 1280,
+        "width": 1280
+      }
+    ]
+  },
+  {
+    "label": "Review administrator overview",
+    "rows": [
+      {
+        "overflow": false,
+        "scrollWidth": 305,
+        "width": 320
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 360,
+        "width": 375
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 378,
+        "width": 393
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 415,
+        "width": 430
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 753,
+        "width": 768
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 1280,
+        "width": 1280
+      }
+    ]
+  },
+  {
+    "label": "Review administrator medicine screening",
+    "rows": [
+      {
+        "overflow": false,
+        "scrollWidth": 305,
+        "width": 320
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 360,
+        "width": 375
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 378,
+        "width": 393
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 415,
+        "width": 430
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 753,
+        "width": 768
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 1265,
+        "width": 1280
+      }
+    ]
+  },
+  {
+    "label": "Review NGO applications and audit",
+    "rows": [
+      {
+        "overflow": false,
+        "scrollWidth": 305,
+        "width": 320
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 360,
+        "width": 375
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 378,
+        "width": 393
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 415,
+        "width": 430
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 753,
+        "width": 768
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 1265,
+        "width": 1280
+      }
+    ]
+  },
+  {
+    "label": "Review pending NGO browse restriction",
+    "rows": [
+      {
+        "overflow": false,
+        "scrollWidth": 320,
+        "width": 320
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 375,
+        "width": 375
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 393,
+        "width": 393
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 430,
+        "width": 430
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 768,
+        "width": 768
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 1280,
+        "width": 1280
+      }
+    ]
+  },
+  {
+    "label": "Review verified NGO dashboard",
+    "rows": [
+      {
+        "overflow": false,
+        "scrollWidth": 305,
+        "width": 320
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 360,
+        "width": 375
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 378,
+        "width": 393
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 415,
+        "width": 430
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 753,
+        "width": 768
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 1280,
+        "width": 1280
+      }
+    ]
+  },
+  {
+    "label": "Review filtered nearby discovery",
+    "rows": [
+      {
+        "overflow": false,
+        "scrollWidth": 305,
+        "width": 320
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 375,
+        "width": 375
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 393,
+        "width": 393
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 430,
+        "width": 430
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 768,
+        "width": 768
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 1280,
+        "width": 1280
+      }
+    ]
+  },
+  {
+    "label": "Review NGO request form",
+    "rows": [
+      {
+        "overflow": false,
+        "scrollWidth": 305,
+        "width": 320
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 360,
+        "width": 375
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 378,
+        "width": 393
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 415,
+        "width": 430
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 753,
+        "width": 768
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 1265,
+        "width": 1280
+      }
+    ]
+  },
+  {
+    "label": "Review NGO persisted request timeline",
+    "rows": [
+      {
+        "overflow": false,
+        "scrollWidth": 305,
+        "width": 320
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 360,
+        "width": 375
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 378,
+        "width": 393
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 415,
+        "width": 430
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 753,
+        "width": 768
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 1265,
+        "width": 1280
+      }
+    ]
+  },
+  {
+    "label": "Review donor decision",
+    "rows": [
+      {
+        "overflow": false,
+        "scrollWidth": 305,
+        "width": 320
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 360,
+        "width": 375
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 378,
+        "width": 393
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 415,
+        "width": 430
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 753,
+        "width": 768
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 1265,
+        "width": 1280
+      }
+    ]
+  },
+  {
+    "label": "Review donor collection schedule",
+    "rows": [
+      {
+        "overflow": false,
+        "scrollWidth": 305,
+        "width": 320
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 360,
+        "width": 375
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 378,
+        "width": 393
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 415,
+        "width": 430
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 753,
+        "width": 768
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 1265,
+        "width": 1280
+      }
+    ]
+  },
+  {
+    "label": "Review NGO handoff form",
+    "rows": [
+      {
+        "overflow": false,
+        "scrollWidth": 305,
+        "width": 320
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 360,
+        "width": 375
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 378,
+        "width": 393
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 415,
+        "width": 430
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 753,
+        "width": 768
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 1265,
+        "width": 1280
+      }
+    ]
+  },
+  {
+    "label": "Review completed collection timeline",
+    "rows": [
+      {
+        "overflow": false,
+        "scrollWidth": 305,
+        "width": 320
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 360,
+        "width": 375
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 378,
+        "width": 393
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 415,
+        "width": 430
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 753,
+        "width": 768
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 1265,
+        "width": 1280
+      }
+    ]
+  },
+  {
+    "label": "Review NGO notifications",
+    "rows": [
+      {
+        "overflow": false,
+        "scrollWidth": 305,
+        "width": 320
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 360,
+        "width": 375
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 378,
+        "width": 393
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 415,
+        "width": 430
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 768,
+        "width": 768
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 1280,
+        "width": 1280
+      }
+    ]
+  },
+  {
+    "label": "Review donor notifications",
+    "rows": [
+      {
+        "overflow": false,
+        "scrollWidth": 305,
+        "width": 320
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 360,
+        "width": 375
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 378,
+        "width": 393
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 415,
+        "width": 430
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 768,
+        "width": 768
+      },
+      {
+        "overflow": false,
+        "scrollWidth": 1280,
+        "width": 1280
+      }
+    ]
+  }
+]
