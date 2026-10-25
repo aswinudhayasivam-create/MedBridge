@@ -2,7 +2,7 @@
 
 ## TiDB target boundary
 
-The planned hosted review database is MySQL-compatible TiDB Cloud Starter; local MySQL and the full application remain unchanged. The compiled destination approval pins both the gateway hostname and Starter username prefix; it cannot be broadened with environment overrides. Empty approval values currently prevent hosted startup. TLS uses VERIFY_IDENTITY and Java system roots, DML-only grants and marker checks precede seeding, and the original fixed cutoff remains enforced. No hosted compatibility is claimed. See [TiDB migration](docs/TIDB-REVIEW-MIGRATION.md).
+The planned hosted review database is MySQL-compatible TiDB Cloud Starter; local MySQL and the full application remain unchanged. The compiled destination approval pins both the gateway hostname and Starter username prefix; it cannot be broadened with environment overrides. The owner-approved destination is now pinned after authenticated TLS verification; database enforcement proof and restricted-runtime setup remain incomplete and readiness stays closed. TLS uses VERIFY_IDENTITY and Java system roots, DML-only grants and marker checks precede seeding, and the original fixed cutoff remains enforced. No hosted compatibility is claimed. See [TiDB migration](docs/TIDB-REVIEW-MIGRATION.md).
 
 ## Repository and runtime
 
