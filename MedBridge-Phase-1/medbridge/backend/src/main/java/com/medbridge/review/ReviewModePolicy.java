@@ -51,9 +51,10 @@ public class ReviewModePolicy {
             var overrides = org.springframework.boot.context.properties.bind.Binder.get(env).bind(
                 "spring.datasource.hikari.data-source-properties", org.springframework.boot.context.properties.bind.Bindable.mapOf(String.class,String.class)).orElse(Map.of());
             require(overrides.isEmpty());
-            require(property("spring.datasource.username").matches("mb_review_[a-z0-9_]{1,32}"));
             String transport = property("app.review.transport");
             if ("loopback-test".equals(transport)) {
+                require(property("spring.datasource.username").matches("mb_review_[a-z0-9_]{1,32}"));
+                require(property("spring.datasource.hikari.connection-init-sql").isBlank());
                 require("127.0.0.1".equals(property("server.address")));
                 require(LOCAL_URL.equals(property("spring.datasource.url")));
                 require("http://127.0.0.1:5174".equals(property("app.frontend-url")));
@@ -63,7 +64,9 @@ public class ReviewModePolicy {
                 URI db = URI.create(property("spring.datasource.url").replaceFirst("^jdbc:", ""));
                 require("mysql".equals(db.getScheme()) && db.getUserInfo() == null && db.getFragment() == null);
                 require(db.getHost() != null && db.getHost().equals(property("app.review.database-host")));
-                require(db.getHost().endsWith(".aivencloud.com") && db.getPort() > 0);
+                TiDbReviewDestination.require(property("spring.datasource.url"), property("app.review.database-host"), property("spring.datasource.username"));
+                require("system".equals(property("app.review.tls-trust")));
+                require("SET SESSION foreign_key_checks=ON, tidb_txn_mode='pessimistic'".equals(property("spring.datasource.hikari.connection-init-sql")));
                 require(("/" + DATABASE).equals(db.getPath()));
                 require("sslMode=VERIFY_IDENTITY&serverTimezone=UTC".equals(db.getRawQuery()));
                 URI frontend = URI.create(property("app.frontend-url"));
