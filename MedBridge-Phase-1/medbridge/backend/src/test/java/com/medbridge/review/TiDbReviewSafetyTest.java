@@ -57,9 +57,14 @@ class TiDbReviewSafetyTest {
         when(db.queryForObject("SELECT VERSION()",String.class)).thenReturn("8.0.11-TiDB-fixture");
         when(db.queryForObject("SELECT @@foreign_key_checks",Integer.class)).thenReturn(1);
         when(db.queryForObject("SELECT @@GLOBAL.tidb_enable_check_constraint",Integer.class)).thenReturn(1);
+        when(db.queryForObject("SELECT @@GLOBAL.tidb_enable_foreign_key",Integer.class)).thenReturn(1);
+        when(db.queryForList("SELECT constraint_name FROM information_schema.tidb_check_constraints WHERE constraint_schema=DATABASE() AND table_name=?",String.class,"users")).thenReturn(List.of("chk_latitude","chk_longitude"));
+        when(db.queryForList("SELECT constraint_name FROM information_schema.tidb_check_constraints WHERE constraint_schema=DATABASE() AND table_name=?",String.class,"medicines")).thenReturn(List.of("chk_medicine_quantity","chk_medicine_value"));
+        for(String table:List.of("users","medicines"))
+            when(db.query(eq("SHOW CREATE TABLE "+table),org.mockito.ArgumentMatchers.<org.springframework.jdbc.core.RowMapper<String>>any())).thenReturn(List.of("CREATE TABLE "+table+" (qty INT, CHECK(qty > 0))"));
         when(db.queryForObject("SELECT @@tidb_txn_mode",String.class)).thenReturn("pessimistic");
         when(db.queryForObject("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE()",Long.class)).thenReturn(11L);
-        when(db.queryForObject("SELECT COUNT(*) FROM information_schema.table_constraints WHERE constraint_schema=DATABASE() AND constraint_type='CHECK' AND enforced='YES'",Long.class)).thenReturn(4L);
+        when(db.queryForObject("SELECT COUNT(*) FROM information_schema.tidb_check_constraints WHERE constraint_schema=DATABASE()",Long.class)).thenReturn(4L);
         when(db.queryForObject("SELECT COUNT(*) FROM information_schema.referential_constraints WHERE constraint_schema=DATABASE()",Long.class)).thenReturn(11L);
         return db;
     }
@@ -67,7 +72,7 @@ class TiDbReviewSafetyTest {
         ReviewModePolicy policy=mock(ReviewModePolicy.class);
         when(policy.property("app.review.transport")).thenReturn("hosted-tls");
         assertDoesNotThrow(()->ReviewConfiguration.verifyDatabase(validDatabase(),policy));
-        for(String sql:List.of("SELECT @@foreign_key_checks","SELECT @@GLOBAL.tidb_enable_check_constraint")) {
+        for(String sql:List.of("SELECT @@foreign_key_checks","SELECT @@GLOBAL.tidb_enable_check_constraint","SELECT @@GLOBAL.tidb_enable_foreign_key")) {
             JdbcTemplate db=validDatabase();when(db.queryForObject(sql,Integer.class)).thenReturn(0);
             assertThrows(IllegalStateException.class,()->ReviewConfiguration.verifyDatabase(db,policy));
         }
@@ -76,11 +81,41 @@ class TiDbReviewSafetyTest {
         JdbcTemplate mysql=validDatabase();when(mysql.queryForObject("SELECT VERSION()",String.class)).thenReturn("8.4.11");
         assertThrows(IllegalStateException.class,()->ReviewConfiguration.verifyDatabase(mysql,policy));
         for(String sql:List.of("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE()",
-            "SELECT COUNT(*) FROM information_schema.table_constraints WHERE constraint_schema=DATABASE() AND constraint_type='CHECK' AND enforced='YES'",
+            "SELECT COUNT(*) FROM information_schema.tidb_check_constraints WHERE constraint_schema=DATABASE()",
             "SELECT COUNT(*) FROM information_schema.referential_constraints WHERE constraint_schema=DATABASE()")) {
             JdbcTemplate db=validDatabase();when(db.queryForObject(sql,Long.class)).thenReturn(0L);
             assertThrows(IllegalStateException.class,()->ReviewConfiguration.verifyDatabase(db,policy));
         }
+    }
+
+    @Test void disabledOrMissingNamedChecksCannotPassTiDbMetadataValidation() {
+        ReviewModePolicy policy=mock(ReviewModePolicy.class);
+        when(policy.property("app.review.transport")).thenReturn("hosted-tls");
+        for(String table:List.of("users","medicines")) {
+            JdbcTemplate disabled=validDatabase();
+            when(disabled.query(eq("SHOW CREATE TABLE "+table),org.mockito.ArgumentMatchers.<org.springframework.jdbc.core.RowMapper<String>>any())).thenReturn(List.of("CREATE TABLE "+table+" (qty INT, CHECK(qty > 0) /*!80016 NOT ENFORCED */)"));
+            assertThrows(IllegalStateException.class,()->ReviewConfiguration.verifyDatabase(disabled,policy));
+            JdbcTemplate missing=validDatabase();
+            when(missing.queryForList("SELECT constraint_name FROM information_schema.tidb_check_constraints WHERE constraint_schema=DATABASE() AND table_name=?",String.class,table)).thenReturn(List.of("unexpected_check"));
+            assertThrows(IllegalStateException.class,()->ReviewConfiguration.verifyDatabase(missing,policy));
+        }
+    }
+
+    @Test void approvedHostedConfigurationStillRequiresDatabaseProof() {
+        var pin=TiDbReviewDestination.approved();
+        var env=ReviewModePolicyTest.valid()
+            .withProperty("app.review.transport","hosted-tls").withProperty("server.address","0.0.0.0")
+            .withProperty("app.review.database-host",pin.host())
+            .withProperty("spring.datasource.url","jdbc:mysql://"+pin.host()+":"+pin.port()+"/"+ReviewModePolicy.DATABASE+"?sslMode=VERIFY_IDENTITY&serverTimezone=UTC")
+            .withProperty("spring.datasource.username",pin.prefix()+".mb_review_runtime")
+            .withProperty("app.review.tls-trust","system")
+            .withProperty("spring.datasource.hikari.connection-init-sql","SET SESSION foreign_key_checks=ON, tidb_txn_mode='pessimistic'")
+            .withProperty("app.frontend-url","https://review.example.invalid");
+        var policy=ReviewModePolicyTest.policy(env);
+        assertDoesNotThrow(policy::requireConfiguration);
+        assertFalse(policy.ready());
+        env.setProperty("spring.datasource.username",pin.prefix()+".root");
+        assertThrows(IllegalStateException.class,policy::requireConfiguration);
     }
 
 }
