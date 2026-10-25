@@ -1,5 +1,9 @@
 # Project status and hosting readiness
 
+## TiDB migration status — October 25, 2026
+
+Local migration preparation is on `feature/tidb-hosted-review`, based on `fd3b5bb`. The destination/prefix are not approved yet, so hosted startup remains blocked. TiDB cloud creation, SQL initialization, account creation, actual TiDB workflow/concurrency/restart/TLS tests and hosting are pending. No cloud resource has changed. See [TiDB migration and remaining approvals](docs/TIDB-REVIEW-MIGRATION.md). Current migration validation: Java 17 Maven 139 tests and package; disposable local MySQL authentication/demo/review integration 1/3/5 tests; frontend 16 safety and 51 Vitest tests; both npm audits zero vulnerabilities; production frontend build passed. Seven startup trust checks passed using the installed Java 17 keytool and Git Bash with dedicated fixture paths (not a container startup or live TiDB TLS test). An initial MySQL review test exposed quoted-account grant formatting, corrected before final validation. TiDB-backed tests remain unavailable without the instance. Prior MySQL results below are historical baseline evidence.
+
 Verified locally: 24 October 2026. Working branch: `feature/phase-5-8-demo-mvp`. Starting HEAD for this preparation: `0c2527afba61e49e7f51ba9345b2ccf64143556c`. All 70 original Phase 5–8 commits and original Phase 4 history are preserved. A final full-SHA single-file commit manifest accompanies the handoff.
 
 ## Environment status
