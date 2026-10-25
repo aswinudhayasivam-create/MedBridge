@@ -1,5 +1,9 @@
 # Protected online review deployment guide — not executed
 
+## Current target: TiDB Starter, pending verification
+
+Use the [TiDB-specific migration procedure and private configuration checklist](docs/TIDB-REVIEW-MIGRATION.md) for the planned hosted review. Do not execute the legacy Aiven initialization procedure for TiDB. Exact destination/prefix approval, $0/no-card eligibility, constraint enforcement and complete actual TiDB integration evidence remain blockers. No cloud resource changes are authorized by this document. Earlier Aiven instructions below are retained as historical provider-specific guidance only.
+
 **STOP before each cloud/configuration/database action and obtain separate approval.** No service, environment variable, CA file, database, domain or deployment has been changed by this preparation. No hosted review credentials or live review URL are published.
 
 ## Current evidence and unresolved infrastructure
