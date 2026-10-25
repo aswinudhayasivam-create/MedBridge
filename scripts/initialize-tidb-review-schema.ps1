@@ -3,10 +3,15 @@
 param(
  [Parameter(Mandatory=$true)][string]$SettingsPath,
  [Parameter(Mandatory=$true)][string]$CaCertificatePath,
- [switch]$Apply
+ [switch]$Apply,
+ # Secure in-process injection keeps one trusted owner prompt for the whole release.
+ # These objects are never command-line strings, serialized, or logged.
+ [Security.SecureString]$OwnerPassword,
+ [Security.SecureString]$RuntimePassword
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
+if(($null -eq $OwnerPassword) -ne ($null -eq $RuntimePassword)){throw 'Provide both in-memory credentials or neither.'}
 $database='medbridgereview20261026'
 $repo=Split-Path -Parent $PSScriptRoot
 $resources=Join-Path $repo 'MedBridge-Phase-1\medbridge\backend\src\main\resources'
@@ -37,13 +42,15 @@ $lock=[IO.File]::Open($lockPath,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,
 $lock.Dispose()
 $old=[Environment]::GetEnvironmentVariable('MYSQL_PWD','Process')
 $handle=[IntPtr]::Zero
-function Select-PrivatePassword([string]$label) {
+function Select-PrivatePassword([string]$label,[Security.SecureString]$provided) {
  if($script:handle -ne [IntPtr]::Zero) { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($script:handle); $script:handle=[IntPtr]::Zero }
- $secret=Read-Host $label -AsSecureString
+ $ownsSecret=$null -eq $provided
+ $secret=if($ownsSecret){Read-Host $label -AsSecureString}else{$provided}
+ if($secret.Length -eq 0){throw 'Empty private credential; stop.'}
  try {
   $script:handle=[Runtime.InteropServices.Marshal]::SecureStringToBSTR($secret)
   [Environment]::SetEnvironmentVariable('MYSQL_PWD',[Runtime.InteropServices.Marshal]::PtrToStringBSTR($script:handle),'Process')
- } finally { $secret.Dispose() }
+ } finally { if($ownsSecret){$secret.Dispose()} }
 }
 function Invoke-SecureQuery([string]$sql,[string]$user,[int]$ExpectedError=0) {
  $argsMysql=@('run','--rm','-i','--env','MYSQL_PWD','--mount',"type=bind,source=$ca,target=/ca.pem,readonly",'mysql:8.4','mysql',
@@ -60,7 +67,7 @@ function Invoke-SecureQuery([string]$sql,[string]$user,[int]$ExpectedError=0) {
  return ($output | Out-String).Trim()
 }
 try {
- Select-PrivatePassword 'Enter restricted runtime password privately (not saved)'
+ Select-PrivatePassword 'Enter restricted runtime password privately (not saved)' $RuntimePassword
  $grants=Invoke-SecureQuery 'SHOW GRANTS' $settings.runtimeUser
  $privileges=@{}
  $recipient='(?:''[A-Za-z0-9_.]+''|`[A-Za-z0-9_.]+`)@(?:''[^'']+''|`[^`]+`)'
@@ -72,7 +79,7 @@ try {
   foreach($privilege in ($Matches[1] -split '\s*,\s*')) { if($privilege.ToUpperInvariant() -notin @('SELECT','INSERT','UPDATE','DELETE')) { throw 'Runtime has non-DML privileges.' }; $privileges[$privilege.ToUpperInvariant()]=$true }
  }
  if($privileges.Count -ne 4) { throw 'Runtime requires all four DML privileges only.' }
- Select-PrivatePassword 'Enter separate schema-owner password privately (not saved)'
+ Select-PrivatePassword 'Enter separate schema-owner password privately (not saved)' $OwnerPassword
  if((Invoke-SecureQuery 'SELECT DATABASE()' $settings.ownerUser) -cne $database) { throw 'Wrong target database.' }
  if((Invoke-SecureQuery 'SELECT VERSION()' $settings.ownerUser) -notmatch '(?i)tidb') { throw 'Target is not TiDB.' }
  if((Invoke-SecureQuery "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE()" $settings.ownerUser) -ne '0') { throw 'Destination is not empty. Do not run DDL.' }
