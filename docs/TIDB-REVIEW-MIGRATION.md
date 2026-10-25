@@ -25,7 +25,7 @@ These are documented capabilities, not successful TiDB-backed tests. Stop if the
 
 ## Immutable destination approval
 
-`tidb-review-destination.properties` is loaded directly from the classpath, outside Spring's property override mechanism. Its host and username prefix are deliberately blank until the owner supplies and approves the exact instance configuration. Hosted startup therefore fails closed now. Pinning the approved host, port 4000 and username prefix requires a reviewed source change and rebuild. A shared TiDB gateway hostname alone cannot identify an instance; the exact prefix is also pinned. No environment allowlist or arbitrary hostname activates access.
+`tidb-review-destination.properties` is loaded directly from the classpath, outside Spring's property override mechanism. It now pins the owner-approved and TLS-authenticated gateway hostname, port 4000 and exact case-sensitive prefix. Changing that approval requires a reviewed source change and rebuild. Destination approval alone does not satisfy database proof or enable review. A shared TiDB gateway hostname alone cannot identify an instance; the exact prefix is also pinned. No environment allowlist or arbitrary hostname activates access.
 
 The JDBC URL must be exactly `jdbc:mysql://<pinned-host>:4000/medbridgereview20261026?sslMode=VERIFY_IDENTITY&serverTimezone=UTC`. The runtime connection name must be `<pinned-prefix>.mb_review_<suffix>`. Root/administrator names cannot pass. Startup also rejects administrative/role/global/table/column grants and requires all four database DML privileges.
 
@@ -91,3 +91,15 @@ Java 17 Maven: 139 tests passed and package built. Existing disposable local MyS
 Seven startup checks passed with the installed Java 17 keytool/Git Bash using dedicated workspace fixture paths: missing explicit trust, missing roots, invalid store, conflicting custom CA, invalid custom CA, missing custom CA and successful system-trust dispatch. JVM launch was replaced with a sentinel so these tests did not start Spring or contact a database. They do not establish real TiDB certificate/hostname compatibility. The container-native test script is included for Linux/CI; a full backend image build and actual TiDB negative TLS tests remain required.
 
 No passwords, hosted connections, user creation, SQL application, push, deployment or cloud configuration changes were performed for this migration.
+
+## Authenticated Starter preflight — October 25 follow-up
+
+The owner's exact case-sensitive instance prefix and ISRG Root X1 CA were used successfully with MySQL VERIFY_IDENTITY. Windows/Docker TCP passed; authenticated server version was `8.0.11-TiDB-v8.5.3-serverless`. DATABASE() matched `medbridgereview20261026`; initial table count was zero. GLOBAL CHECK, GLOBAL foreign-key capability and SESSION foreign_key_checks all read 1. No global setting was changed.
+
+Two uniquely named, ownership-marked disposable probe tables were created, then metadata validation failed with error 1054 before behavioral rejection tests. The validator incorrectly assumed MySQL's TABLE_CONSTRAINTS.ENFORCED column, which TiDB does not expose. Both probe tables were removed after ownership validation and the final table count was zero. No application schema, accounts or other databases were modified. No probe or initializer retry was performed.
+
+The local validator now uses TiDB's TIDB_CHECK_CONSTRAINTS for named CHECK inventory plus SHOW CREATE TABLE to reject NOT ENFORCED definitions; it also checks global foreign-key capability. This metadata correction has focused local regression coverage, but has not been exercised against TiDB. A new explicitly controlled disposable probe must verify actual CHECK/orphan rejection and cleanup before initialization readiness can be claimed. The immutable destination approval now pins the authenticated hostname and exact case-sensitive prefix; configuration alone still cannot make readiness pass without database proof; a separate restricted runtime user remains required. Administrator credentials are not a runtime configuration.
+
+Reference: [TiDB TABLE_CONSTRAINTS layout](https://docs.pingcap.com/tidb/stable/information-schema-table-constraints/) and [TiDB CHECK metadata](https://docs.pingcap.com/tidb/stable/information-schema-tidb-check-constraints/).
+
+Follow-up focused validation: 17 TiDB safety tests passed, including rejection of NOT ENFORCED/missing named checks and refusal to use the prefixed root as runtime. The original full Maven/Vitest suites were not repeated. No corrected cloud probe has run yet.
