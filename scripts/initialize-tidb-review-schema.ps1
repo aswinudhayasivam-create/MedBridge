@@ -49,8 +49,9 @@ function Invoke-SecureQuery([string]$sql,[string]$user,[int]$ExpectedError=0) {
  $argsMysql=@('run','--rm','-i','--env','MYSQL_PWD','--mount',"type=bind,source=$ca,target=/ca.pem,readonly",'mysql:8.4','mysql',
   "--host=$($pin.host)",'--port=4000',"--user=$user",'--ssl-mode=VERIFY_IDENTITY','--ssl-ca=/ca.pem',"--database=$database",'--batch','--skip-column-names',
   "--init-command=SET SESSION foreign_key_checks=ON, tidb_txn_mode='pessimistic'", "--execute=$sql")
- $output=& docker @argsMysql 2>&1
- $code=$LASTEXITCODE
+ $priorAction=$ErrorActionPreference
+ try { $ErrorActionPreference='Continue';$output=@(& docker @argsMysql 2>&1);$code=$LASTEXITCODE }
+ finally { $ErrorActionPreference=$priorAction }
  if($ExpectedError -ne 0) {
   if($code -eq 0 -or ($output | Out-String) -notmatch "ERROR $ExpectedError ") { throw 'Required constraint rejection was not demonstrated. Stop; no automatic retry.' }
   return
@@ -75,6 +76,7 @@ try {
  if((Invoke-SecureQuery 'SELECT DATABASE()' $settings.ownerUser) -cne $database) { throw 'Wrong target database.' }
  if((Invoke-SecureQuery 'SELECT VERSION()' $settings.ownerUser) -notmatch '(?i)tidb') { throw 'Target is not TiDB.' }
  if((Invoke-SecureQuery "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE()" $settings.ownerUser) -ne '0') { throw 'Destination is not empty. Do not run DDL.' }
+ if((Invoke-SecureQuery 'SELECT @@GLOBAL.tidb_enable_foreign_key' $settings.ownerUser) -ne '1') { throw 'Global foreign key capability is disabled; no global change authorized.' }
  if((Invoke-SecureQuery "SELECT CONCAT(@@foreign_key_checks,':',@@GLOBAL.tidb_enable_check_constraint,':',@@tidb_txn_mode)" $settings.ownerUser) -ne '1:1:pessimistic') { throw 'Constraint or transaction settings mismatch.' }
  Write-Host 'Database identity, emptiness, runtime grants and VERIFY_IDENTITY passed.'
  foreach($file in $files) {
@@ -85,7 +87,14 @@ try {
  $expected=@('users','ngo_profiles','medicines','requests','notifications','demo_medicine_details','demo_photos','demo_request_details','demo_events','demo_ngo_applications','review_environment') | Sort-Object
  $actual=(Invoke-SecureQuery 'SELECT table_name FROM information_schema.tables WHERE table_schema=DATABASE() ORDER BY table_name' $settings.ownerUser) -split '\r?\n' | Sort-Object
  if(@(Compare-Object $expected $actual).Count -ne 0) { throw 'Expected 11-table inventory mismatch.' }
- if((Invoke-SecureQuery "SELECT COUNT(*) FROM information_schema.table_constraints WHERE constraint_schema=DATABASE() AND constraint_type='CHECK' AND enforced='YES'" $settings.ownerUser) -ne '4') { throw 'All four CHECK constraints must be enforced.' }
+ if((Invoke-SecureQuery "SELECT COUNT(*) FROM information_schema.tidb_check_constraints WHERE constraint_schema=DATABASE()" $settings.ownerUser) -ne '4') { throw 'All four CHECK constraints must be enforced.' }
+ foreach($table in @('users','medicines')) {
+  $expectedNames=if($table -eq 'users'){@('chk_latitude','chk_longitude')}else{@('chk_medicine_quantity','chk_medicine_value')}
+  $actualNames=(Invoke-SecureQuery "SELECT constraint_name FROM information_schema.tidb_check_constraints WHERE constraint_schema=DATABASE() AND table_name='$table' ORDER BY constraint_name" $settings.ownerUser) -split '\r?\n'
+  if(@(Compare-Object $expectedNames $actualNames).Count -ne 0) { throw 'Named CHECK constraints mismatch.' }
+  $definition=Invoke-SecureQuery "SHOW CREATE TABLE $table" $settings.ownerUser
+  if($definition -notmatch '(?i)CHECK' -or $definition -match '(?i)\bNOT\s+ENFORCED\b') { throw 'CHECK constraints are not demonstrably enforced.' }
+ }
  if((Invoke-SecureQuery "SELECT COUNT(*) FROM information_schema.referential_constraints WHERE constraint_schema=DATABASE()" $settings.ownerUser) -ne '11') { throw 'All eleven foreign keys must exist.' }
  # Only transient fictional records in transactions; failed statements disconnect/rollback.
  $fixture="INSERT INTO users(name,email,password_hash,role,latitude,longitude) VALUES('Constraint probe','probe@review.medbridge.invalid','not-an-authentication-password','DONOR',"
