@@ -1,5 +1,9 @@
 # System architecture and environment boundaries
 
+## TiDB target boundary
+
+The planned hosted review database is MySQL-compatible TiDB Cloud Starter; local MySQL and the full application remain unchanged. The compiled destination approval pins both the gateway hostname and Starter username prefix; it cannot be broadened with environment overrides. Empty approval values currently prevent hosted startup. TLS uses VERIFY_IDENTITY and Java system roots, DML-only grants and marker checks precede seeding, and the original fixed cutoff remains enforced. No hosted compatibility is claimed. See [TiDB migration](docs/TIDB-REVIEW-MIGRATION.md).
+
 ## Repository and runtime
 
 The nested `MedBridge-Phase-1/medbridge/frontend` and `backend` structure is preserved. React components call REST; Spring Security authenticates; the existing `DemoService` performs validated transactional mutations using the configured MySQL database. Review mode reuses that service and the same UI, not a parallel mock API.
@@ -36,7 +40,7 @@ sequenceDiagram
 1. Normal defaults leave registration, local demo and review disabled.
 2. Local `@medbridge.test` identities still require the exact unchanged `LocalAuthSafetyConfiguration.requireIsolated` guard. The review profile cannot satisfy it.
 3. A requested review mode must use only the review profile, the explicit fictional-purpose marker, a deadline no later than October 26 end-of-day Kolkata, no public registration/local-demo flag, safe ORM/SQL modes, private distinct secrets and exact frontend/database settings.
-4. Hosted review requires `0.0.0.0`, the configured dedicated Aiven hostname and the exact dedicated database path with `sslMode=VERIFY_IDENTITY`. Only the loopback-test transport permits its exact 127.0.0.1 URL and bind/origin pair; this cannot be used with a public bind.
+4. Hosted review requires `0.0.0.0`, the exact compiled approved TiDB hostname and username prefix and the exact dedicated database path with `sslMode=VERIFY_IDENTITY`. Only the loopback-test transport permits its exact 127.0.0.1 URL and bind/origin pair; this cannot be used with a public bind.
 5. Before any review seeding, the runtime connection proves `DATABASE()`, the review marker/schema version, absence of non-review identities and DML-only grants on that database. Schema must already exist; startup does not migrate it.
 6. Review seeding adds four separate private review identities idempotently and preserves existing state/passwords. The API becomes ready only after proof and seed succeed.
 
