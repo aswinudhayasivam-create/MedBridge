@@ -1,5 +1,11 @@
 # MedBridge — Smart Medicine Redistribution Network
 
+## TiDB review migration (local preparation)
+
+The planned hosted review database is moving from Aiven to an eligible $0 MySQL-compatible TiDB Cloud Starter instance. Existing React, Spring Boot, local demo accounts and workflows are retained. Hosted review is intentionally blocked until the exact instance/prefix is pinned and TiDB-backed tests pass. No cloud resources changed in this migration. Public registration stays disabled; the October 27, 00:00 IST cutoff is unchanged.
+
+See [migration findings, private configuration and approval gates](docs/TIDB-REVIEW-MIGRATION.md). The Aiven setup files remain available; they are not the TiDB initialization procedure. Historical test totals below describe the earlier MySQL baseline, not proof of TiDB compatibility.
+
 **A donation-only full-stack application connecting donors with verified fictional NGO/clinic receivers.**
 
 React / Vite · Java 17 / Spring Boot 3 · Spring Security / JWT / BCrypt · MySQL 8
