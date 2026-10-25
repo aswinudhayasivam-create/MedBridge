@@ -60,7 +60,7 @@ class ReviewModePolicyTest {
             .withProperty("app.review.database-host","fictional-review.aivencloud.com")
             .withProperty("spring.datasource.url","jdbc:mysql://fictional-review.aivencloud.com:12345/"+ReviewModePolicy.DATABASE+"?sslMode=VERIFY_IDENTITY&serverTimezone=UTC")
             .withProperty("app.frontend-url","https://fictional-review.example.invalid");
-        assertDoesNotThrow(policy(env)::requireConfiguration);
+        assertThrows(IllegalStateException.class,policy(env)::requireConfiguration);
         env.setProperty("spring.datasource.url",env.getProperty("spring.datasource.url").replace("VERIFY_IDENTITY","REQUIRED"));
         assertThrows(IllegalStateException.class,policy(env)::requireConfiguration);
     }
