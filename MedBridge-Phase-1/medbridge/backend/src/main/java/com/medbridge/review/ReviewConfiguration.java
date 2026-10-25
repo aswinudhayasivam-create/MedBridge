@@ -37,19 +37,33 @@ public class ReviewConfiguration {
         var marker=markers.get(0);
         if (!ReviewModePolicy.PURPOSE.equals(marker.get("purpose")) || ((Number)marker.get("schema_version")).intValue()!=1 || !ReviewModePolicy.HARD_STOP.equals(Instant.parse((String)marker.get("expires_at")))) fail();
         if (db.queryForObject("SELECT COUNT(*) FROM users WHERE LOWER(TRIM(email)) NOT LIKE '%@review.medbridge.invalid'", Long.class)!=0) fail();
-        boolean scopedGrant=false;
-        for (String grant : db.query("SHOW GRANTS", (rs,row)->rs.getString(1))) {
-            String normalized=grant.toUpperCase(Locale.ROOT).replace("`", "");
-            if (normalized.contains("WITH GRANT OPTION")) fail();
-            if (normalized.startsWith("GRANT USAGE ON *.* TO ")) continue;
-            String[] parts=normalized.split(" ON ",2);
-            if(parts.length!=2 || !parts[1].startsWith(ReviewModePolicy.DATABASE.toUpperCase(Locale.ROOT)+".* TO ")) fail();
-            Set<String> privileges=new HashSet<>(Arrays.asList(parts[0].substring("GRANT ".length()).split(", ")));
-            if (!Set.of("SELECT","INSERT","UPDATE","DELETE").containsAll(privileges) || privileges.isEmpty()) fail();
-            scopedGrant=true;
+        requireRestrictedGrants(db.query("SHOW GRANTS", (rs,row)->rs.getString(1)));
+        if ("hosted-tls".equals(policy.property("app.review.transport"))) {
+            if (!db.queryForObject("SELECT VERSION()",String.class).toLowerCase(Locale.ROOT).contains("tidb")) fail();
+            if (db.queryForObject("SELECT @@foreign_key_checks",Integer.class)!=1 || db.queryForObject("SELECT @@GLOBAL.tidb_enable_check_constraint",Integer.class)!=1) fail();
+            if (!"pessimistic".equalsIgnoreCase(db.queryForObject("SELECT @@tidb_txn_mode",String.class))) fail();
+            if (db.queryForObject("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE()",Long.class)!=11) fail();
+            if (db.queryForObject("SELECT COUNT(*) FROM information_schema.table_constraints WHERE constraint_schema=DATABASE() AND constraint_type='CHECK' AND enforced='YES'",Long.class)!=4) fail();
+            if (db.queryForObject("SELECT COUNT(*) FROM information_schema.referential_constraints WHERE constraint_schema=DATABASE()",Long.class)!=11) fail();
         }
-        if (!scopedGrant) fail();
     }
+    static void requireRestrictedGrants(List<String> grants) {
+        Set<String> allowed=Set.of("SELECT","INSERT","UPDATE","DELETE");
+        Set<String> effective=new HashSet<>();
+        for(String grant:grants) {
+            // TiDB and MySQL can vary comma whitespace; reject roles, dynamic/global,
+            // table/column grants and grant options instead of guessing their semantics.
+            var match=java.util.regex.Pattern.compile("^GRANT ([A-Z, ]+) ON (\\*|`?"+ReviewModePolicy.DATABASE+"`?)\\.\\* TO (?:'[A-Za-z0-9_.]+'|`[A-Za-z0-9_.]+`)@(?:'[^']+'|`[^`]+`)$",java.util.regex.Pattern.CASE_INSENSITIVE).matcher(grant);
+            if(!match.matches()) fail();
+            String scope=match.group(2).replace("`", "");
+            Set<String> privileges=new HashSet<>(Arrays.asList(match.group(1).toUpperCase(Locale.ROOT).split("\\s*,\\s*")));
+            if(scope.equals("*") && privileges.equals(Set.of("USAGE"))) continue;
+            if(!scope.equalsIgnoreCase(ReviewModePolicy.DATABASE) || privileges.isEmpty() || !allowed.containsAll(privileges)) fail();
+            effective.addAll(privileges);
+        }
+        if(!effective.equals(allowed)) fail();
+    }
+
     private static void fail() { throw new IllegalStateException("Review database isolation proof failed."); }
     private void provision(JdbcTemplate db, PasswordEncoder encoder, ReviewModePolicy policy, String key, String name, String role, boolean verified, String org) {
         String email=key+"@review.medbridge.invalid";
