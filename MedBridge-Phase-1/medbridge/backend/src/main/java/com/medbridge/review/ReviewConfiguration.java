@@ -41,11 +41,22 @@ public class ReviewConfiguration {
         if ("hosted-tls".equals(policy.property("app.review.transport"))) {
             if (!db.queryForObject("SELECT VERSION()",String.class).toLowerCase(Locale.ROOT).contains("tidb")) fail();
             if (db.queryForObject("SELECT @@foreign_key_checks",Integer.class)!=1 || db.queryForObject("SELECT @@GLOBAL.tidb_enable_check_constraint",Integer.class)!=1) fail();
+            if (db.queryForObject("SELECT @@GLOBAL.tidb_enable_foreign_key",Integer.class)!=1) fail();
             if (!"pessimistic".equalsIgnoreCase(db.queryForObject("SELECT @@tidb_txn_mode",String.class))) fail();
             if (db.queryForObject("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE()",Long.class)!=11) fail();
-            if (db.queryForObject("SELECT COUNT(*) FROM information_schema.table_constraints WHERE constraint_schema=DATABASE() AND constraint_type='CHECK' AND enforced='YES'",Long.class)!=4) fail();
+            if (db.queryForObject("SELECT COUNT(*) FROM information_schema.tidb_check_constraints WHERE constraint_schema=DATABASE()",Long.class)!=4) fail();
+            requireEnforcedChecks(db, "users", Set.of("chk_latitude","chk_longitude"));
+            requireEnforcedChecks(db, "medicines", Set.of("chk_medicine_quantity","chk_medicine_value"));
             if (db.queryForObject("SELECT COUNT(*) FROM information_schema.referential_constraints WHERE constraint_schema=DATABASE()",Long.class)!=11) fail();
         }
+    }
+    private static void requireEnforcedChecks(JdbcTemplate db, String table, Set<String> expected) {
+        // TiDB v8.5 does not expose MySQL TABLE_CONSTRAINTS.ENFORCED.
+        var names=db.queryForList("SELECT constraint_name FROM information_schema.tidb_check_constraints WHERE constraint_schema=DATABASE() AND table_name=?",String.class,table);
+        if(names.size()!=expected.size() || !new HashSet<>(names).equals(expected)) fail();
+        var definitions=db.query("SHOW CREATE TABLE "+table,(rs,row)->rs.getString(2));
+        if(definitions.size()!=1 || definitions.get(0)==null || !definitions.get(0).toUpperCase(Locale.ROOT).contains("CHECK") ||
+            java.util.regex.Pattern.compile("(?i)\\bNOT\\s+ENFORCED\\b").matcher(definitions.get(0)).find()) fail();
     }
     static void requireRestrictedGrants(List<String> grants) {
         Set<String> allowed=Set.of("SELECT","INSERT","UPDATE","DELETE");
