@@ -1,8 +1,10 @@
 # MedBridge — Smart Medicine Redistribution Network
 
+> **Source status (October 26, 2026):** This README is published on both `main` and the development branch. The **complete React/Spring Boot application** and TiDB review preparation currently live on **[`feature/tidb-hosted-review`](https://github.com/aswinudhayasivam-create/MedBridge/tree/feature/tidb-hosted-review)**; the default `main` application source is still an older Phase 1 snapshot until the draft release pull request passes hosted acceptance. Use the feature branch for local testing. Do not merge or deploy an unverified full-stack release.
+
 ## Website and source code
 
-**[Open the MedBridge website (Vercel frontend)](https://med-bridge-ruddy.vercel.app/)** · **[GitHub repository](https://github.com/aswinudhayasivam-create/MedBridge)** · [Local demo setup](DEMO-SETUP.md) · [Project status](PROJECT-STATUS.md)
+**[Open the MedBridge website (Vercel frontend)](https://med-bridge-ruddy.vercel.app/)** · **[GitHub repository](https://github.com/aswinudhayasivam-create/MedBridge)** · [Local demo setup](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-SETUP.md) · [Project status](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/PROJECT-STATUS.md) · [Final QA / PDF fidelity checklist](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/docs/FINAL-SUBMISSION-RELEASE-CHECKLIST.md)
 
 > **Deployment note (October 26, 2026):** The website link points to the existing Vercel frontend and is also configured in this repository's GitHub About section. The complete hosted donor–admin–NGO journey is **not yet verified**: the restricted TiDB application account, 11-table review schema, new Render deployment, and protected review frontend still need acceptance. The public local demo passwords below **do not work in hosted review mode**. Never treat this prototype as a real medicine distribution service.
 
@@ -17,13 +19,13 @@ These are deliberately public **fictional local-only** credentials for the teste
 | Pending NGO (HopeCare) | `pending@medbridge.test` | `DemoPending2026!` |
 | Administrator | `admin@medbridge.test` | `DemoAdmin2026!` |
 
-**To sign in locally:** follow [DEMO-SETUP.md](DEMO-SETUP.md), start the database, Spring Boot and Vite frontend using `scripts/phase5-demo.ps1`, then visit `http://127.0.0.1:5173/login`. These accounts are **not** public online accounts. See [DEMO-LOGIN.md](DEMO-LOGIN.md) for local isolation and safeguards.
+**To sign in locally:** follow [DEMO-SETUP.md](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-SETUP.md), start the database, Spring Boot and Vite frontend using `scripts/phase5-demo.ps1`, then visit `http://127.0.0.1:5173/login`. These accounts are **not** public online accounts. See [DEMO-LOGIN.md](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-LOGIN.md) for local isolation and safeguards.
 
 ## Hosted database status
 
 The hosted review is migrating from Aiven to a $0 MySQL-compatible TiDB Cloud Starter instance. The empty review database was created, and authenticated TiDB TLS/SQL compatibility probes passed. The restricted runtime user and 11 application tables still require verification; do not deploy a backend with administrator credentials or assume the online workflow works. Public registration remains disabled, and the protected review expires **October 27, 2026 at 00:00 IST**.
 
-See [TiDB migration checklist](docs/TIDB-REVIEW-MIGRATION.md), [deployment guide](DEPLOYMENT-GUIDE.md), and [project status](PROJECT-STATUS.md). Aiven files remain as legacy references and must not be used to initialize TiDB.
+See [TiDB migration checklist](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/docs/TIDB-REVIEW-MIGRATION.md), [deployment guide](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEPLOYMENT-GUIDE.md), and [project status](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/PROJECT-STATUS.md). Aiven files remain as legacy references and must not be used to initialize TiDB.
 
 **A donation-only full-stack application connecting donors with verified fictional NGO/clinic receivers.**
 
@@ -31,7 +33,7 @@ React / Vite · Java 17 / Spring Boot 3 · Spring Security / JWT / BCrypt · MyS
 
 > **Evaluation status:** the complete local workflow is verified. A separate protected online review mode is implemented for deployment preparation; **no working hosted review environment or URL is claimed**. Registration, payments and physical medicine transfers are disabled. The online review window ends after October 26, 2026 in Asia/Kolkata time.
 
-[Commit manifest](COMMIT-MANIFEST.md) · [Demo logins](DEMO-LOGIN.md) · [Setup](DEMO-SETUP.md) · [Viva walkthrough](DEMO-WALKTHROUGH.md) · [Project status](PROJECT-STATUS.md) · [Deployment guide](DEPLOYMENT-GUIDE.md)
+[Commit manifest](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/COMMIT-MANIFEST.md) · [Demo logins](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-LOGIN.md) · [Setup](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-SETUP.md) · [Viva walkthrough](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-WALKTHROUGH.md) · [Project status](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/PROJECT-STATUS.md) · [Deployment guide](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEPLOYMENT-GUIDE.md)
 
 ## 1. Project overview
 
@@ -79,7 +81,7 @@ flowchart LR
     S --> N[Notifications + audit events]
 ```
 
-[SYSTEM-ARCHITECTURE.md](SYSTEM-ARCHITECTURE.md) distinguishes local, review and unchanged hosted environments, including startup and request-time boundaries.
+[SYSTEM-ARCHITECTURE.md](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/SYSTEM-ARCHITECTURE.md) distinguishes local, review and unchanged hosted environments, including startup and request-time boundaries.
 
 ## 7. Donor workflow
 
@@ -107,25 +109,32 @@ Review NGO applications and medicine declarations/photos, approve or reject fict
 
 Actual application captures from the completed local walkthrough; illustrated counts reflect their capture stage, not hardcoded current totals.
 
-![Donor dashboard](docs/demo-screenshots/donor-dashboard-desktop.jpg)
+![Donor dashboard](https://raw.githubusercontent.com/aswinudhayasivam-create/MedBridge/feature/tidb-hosted-review/docs/demo-screenshots/donor-dashboard-desktop.jpg)
 
 | Verified NGO discovery | Mobile discovery |
 | --- | --- |
-| ![NGO discovery](docs/demo-screenshots/ngo-browse-desktop.jpg) | ![Mobile NGO discovery](docs/demo-screenshots/ngo-browse-mobile.jpg) |
+| ![NGO discovery](https://raw.githubusercontent.com/aswinudhayasivam-create/MedBridge/feature/tidb-hosted-review/docs/demo-screenshots/ngo-browse-desktop.jpg) | ![Mobile NGO discovery](https://raw.githubusercontent.com/aswinudhayasivam-create/MedBridge/feature/tidb-hosted-review/docs/demo-screenshots/ngo-browse-mobile.jpg) |
 
-[All 27 screenshots and responsive evidence](docs/demo-screenshots/README.md). The [donor](docs/design-reference/MedBridge-How-It-Works-Donors.pdf) and [NGO](docs/design-reference/MedBridge-How-It-Works-NGOs.pdf) references informed real components; no flattened PDF screenshot acts as the interface.
+[All 27 screenshots and responsive evidence](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/docs/demo-screenshots/README.md). The [donor](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/docs/design-reference/MedBridge-How-It-Works-Donors.pdf) and [NGO](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/docs/design-reference/MedBridge-How-It-Works-NGOs.pdf) references informed real components; no flattened PDF screenshot acts as the interface.
 
 ## 11. Demo credentials
 
-The **Donor**, **Verified NGO**, **Pending NGO**, and **Administrator** local demo emails and passwords are listed near the top under [Demo login details](#demo-login-details--local-development-only). See [DEMO-LOGIN.md](DEMO-LOGIN.md) for the exact local-only identity restrictions. Hosted review accounts and their invitation key are private; no usable hosted credentials are published.
+The **Donor**, **Verified NGO**, **Pending NGO**, and **Administrator** local demo emails and passwords are listed near the top under [Demo login details](#demo-login-details--local-development-only). See [DEMO-LOGIN.md](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-LOGIN.md) for the exact local-only identity restrictions. Hosted review accounts and their invitation key are private; no usable hosted credentials are published.
 
 ## 12. Online demo
 
 **Pending deployment and exposure approval. No verified hosted review URL is available.**
 
-The intended evaluation runs independently of a home computer: protected Vercel frontend → dedicated Render review API → isolated persistent MySQL. It uses the same functional screens and service logic. Server configuration, a dedicated database marker/restricted user, invitation key, JWT authorization and expiration must all pass. See [DEPLOYMENT-GUIDE.md](DEPLOYMENT-GUIDE.md) for approvals and exact settings. The old Phase 2 backend is not a review target.
+The intended evaluation runs independently of a home computer: protected Vercel frontend → dedicated Render review API → isolated persistent MySQL. It uses the same functional screens and service logic. Server configuration, a dedicated database marker/restricted user, invitation key, JWT authorization and expiration must all pass. See [DEPLOYMENT-GUIDE.md](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEPLOYMENT-GUIDE.md) for approvals and exact settings. The old Phase 2 backend is not a review target.
 
 ## 13. Local setup
+
+**Before using the steps below, check out the complete source branch:**
+
+```powershell
+git fetch origin feature/tidb-hosted-review
+git switch feature/tidb-hosted-review
+```
 
 Prerequisites: existing Java 17, Maven, Node 24, Docker Desktop Linux engine and MySQL 8 image. Install project dependencies before offline use. Select Java 17 in the current terminal.
 
@@ -137,7 +146,7 @@ Prerequisites: existing Java 17, Maven, Node 24, Docker Desktop Linux engine and
 .\scripts\phase5-demo.ps1 -Action Frontend
 ```
 
-Open `http://127.0.0.1:5173/login`. The selector autofills; Login performs real MySQL authentication. [Detailed local setup](DEMO-SETUP.md) covers private configuration, testing, persistence and the separate disposable review rehearsal. No production credentials are needed.
+Open `http://127.0.0.1:5173/login`. The selector autofills; Login performs real MySQL authentication. [Detailed local setup](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-SETUP.md) covers private configuration, testing, persistence and the separate disposable review rehearsal. No production credentials are needed.
 
 ## 14. API overview
 
@@ -150,7 +159,7 @@ Open `http://127.0.0.1:5173/login`. The selector autofills; Login performs real 
 | Administration | NGO verification, account summary and audit monitoring |
 | Review guard | Protected capability plus minimal database readiness endpoint |
 
-See [API-DOCUMENTATION.md](API-DOCUMENTATION.md) for methods, permissions, payloads and error handling. No public reset or seed endpoint exists.
+See [API-DOCUMENTATION.md](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/API-DOCUMENTATION.md) for methods, permissions, payloads and error handling. No public reset or seed endpoint exists.
 
 ## 15. Database structure
 
@@ -170,11 +179,11 @@ Dedicated review adds `review_environment` as an isolation/schema/expiry marker.
 - Hosted review database requires hostname-verifying TLS and restricted DML permissions; no startup schema reset.
 - Bounded per-peer rate limiting, safe errors, no-store responses and exact CORS origin.
 
-[Security and limitations](SECURITY-AND-DEMO-LIMITATIONS.md) explains residual risks and future real-user requirements.
+[Security and limitations](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/SECURITY-AND-DEMO-LIMITATIONS.md) explains residual risks and future real-user requirements.
 
 ## 17. Testing results
 
-Latest local verification: [PROJECT-STATUS.md](PROJECT-STATUS.md). All reported numbers are from actual commands. Both GitHub Actions workflows passed for the published TiDB branch; actual hosted workflow acceptance remains separate.
+Latest local verification: [PROJECT-STATUS.md](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/PROJECT-STATUS.md). All reported numbers are from actual commands. Both GitHub Actions workflows passed for the published TiDB branch; actual hosted workflow acceptance remains separate.
 
 | Check | Latest result |
 | --- | --- |
