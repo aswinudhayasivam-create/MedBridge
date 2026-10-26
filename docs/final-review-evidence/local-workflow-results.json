@@ -1,0 +1,187 @@
+{
+  "environment": "isolated-local-mysql",
+  "hosted": false,
+  "medicineId": 1,
+  "requestId": 1,
+  "workflow": true,
+  "concurrency": true,
+  "status": "passed",
+  "checks": [
+    {
+      "method": "GET",
+      "route": "/api/review/ready",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "route": "/api/auth/review-mode",
+      "status": 401
+    },
+    {
+      "method": "GET",
+      "route": "/api/auth/review-mode",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "route": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "route": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "route": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "route": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "route": "/api/auth/register",
+      "status": 503
+    },
+    {
+      "method": "POST",
+      "route": "/api/auth/login",
+      "status": 401
+    },
+    {
+      "method": "GET",
+      "route": "/api/demo/browse",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "route": "/api/demo/summary",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "route": "/api/demo/ngos/3/review",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "route": "/api/demo/photos",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "route": "/api/demo/medicines",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "route": "/api/demo/medicines/1/review",
+      "status": 403
+    },
+    {
+      "method": "POST",
+      "route": "/api/demo/medicines/1/review",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "route": "/api/demo/browse",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "route": "/api/demo/medicines/1/requests",
+      "status": 400
+    },
+    {
+      "method": "POST",
+      "route": "/api/demo/medicines/1/requests",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "route": "/api/demo/medicines/1/requests",
+      "status": 409
+    },
+    {
+      "method": "POST",
+      "route": "/api/demo/requests/1/decision",
+      "status": 403
+    },
+    {
+      "method": "POST",
+      "route": "/api/demo/requests/1/decision",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "route": "/api/demo/requests/1/schedule",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "route": "/api/demo/requests/1/code",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "route": "/api/demo/requests/1/code",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "route": "/api/demo/requests/1/collect",
+      "status": 400
+    },
+    {
+      "method": "POST",
+      "route": "/api/demo/requests/1/collect",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "route": "/api/demo/notifications",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "route": "/api/demo/medicines",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "route": "/api/demo/medicines/2/review",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "route": "/api/demo/medicines/2/requests",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "route": "/api/demo/medicines/2/requests",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "route": "/api/demo/requests/3/decision",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "route": "/api/demo/requests/2/decision",
+      "status": 409
+    },
+    {
+      "method": "GET",
+      "route": "/api/demo/summary",
+      "status": 200
+    }
+  ],
+  "persistence": true
+}
