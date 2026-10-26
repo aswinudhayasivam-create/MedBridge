@@ -1,7 +1,7 @@
 name: MedBridge Phase 3 frontend checks
 on:
   push:
-    branches: ['feature/phase-3-*', 'feature/phase-4-*', 'feature/phase-5-*', 'feature/tidb-hosted-review']
+    branches: ['main', 'feature/phase-3-*', 'feature/phase-4-*', 'feature/phase-5-*', 'feature/tidb-hosted-review']
     paths:
       - 'MedBridge-Phase-1/medbridge/frontend/**'
       - '.github/workflows/medbridge-frontend-ci.yml'
