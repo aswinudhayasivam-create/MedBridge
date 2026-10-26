@@ -43,7 +43,7 @@ class ReviewModePolicyTest {
         "server.address,0.0.0.0","spring.sql.init.mode,always","spring.jpa.hibernate.ddl-auto,update",
         "spring.datasource.username,production","spring.datasource.url,jdbc:mysql://unreachable.invalid/production",
         "spring.datasource.hikari.jdbc-url,jdbc:mysql://unreachable.invalid/production","app.frontend-url,http://example.invalid",
-        "app.review.expires-at,2026-10-27T00:00:01Z"})
+        "app.review.expires-at,2026-11-22T18:30:01Z"})
     void incorrectSettingsFailClosed(String key,String value){var env=valid().withProperty(key,value);assertThrows(IllegalStateException.class,policy(env)::requireConfiguration);assertFalse(policy(env).ready());}
     @Test void profileFlagMissingConfigurationAndMixedProfilesNeverSuffice(){
         for(MockEnvironment env:List.of(new MockEnvironment(),new MockEnvironment().withProperty("app.review.enabled","true"),valid())){
@@ -51,8 +51,8 @@ class ReviewModePolicyTest {
             assertThrows(IllegalStateException.class,policy(env)::requireConfiguration);
         }
     }
-    @Test void cutoffIsExactlyMidnightAfterOctober26InKolkata(){
-        assertEquals(Instant.parse("2026-10-26T18:30:00Z"),ReviewModePolicy.HARD_STOP);
+    @Test void cutoffIsExactlyMidnightAfterNovember22InKolkata(){
+        assertEquals(Instant.parse("2026-11-22T18:30:00Z"),ReviewModePolicy.HARD_STOP);
         for(Instant time:List.of(ReviewModePolicy.HARD_STOP,ReviewModePolicy.HARD_STOP.plusSeconds(1)))assertThrows(IllegalStateException.class,()->new ReviewModePolicy(valid(),Clock.fixed(time,ZoneOffset.UTC)).requireConfiguration());
     }
     @Test void hostedTransportRequiresHostnameVerifyingTlsAndExactOrigin(){
