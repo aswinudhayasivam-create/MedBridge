@@ -1,7 +1,12 @@
 name: MedBridge backend build
 on:
   push:
-    branches: ['feature/phase-2-auth', 'feature/phase-4-*', 'feature/phase-5-*', 'feature/tidb-hosted-review']
+    branches: ['main', 'feature/phase-2-auth', 'feature/phase-4-*', 'feature/phase-5-*', 'feature/tidb-hosted-review']
+    paths:
+      - 'MedBridge-Phase-1/medbridge/backend/**'
+      - '.github/workflows/medbridge-backend-ci.yml'
+  pull_request:
+    branches: ['main']
     paths:
       - 'MedBridge-Phase-1/medbridge/backend/**'
       - '.github/workflows/medbridge-backend-ci.yml'
@@ -33,7 +38,7 @@ jobs:
       - name: Compile and test Spring Boot
         run: mvn -B -ntp verify
       - name: Phase 4 authentication against temporary local MySQL
-        if: startsWith(github.ref_name, 'feature/phase-4-') || startsWith(github.ref_name, 'feature/phase-5-') || github.ref_name == 'feature/tidb-hosted-review'
+        if: github.event_name == 'pull_request' || github.ref_name == 'main' || startsWith(github.ref_name, 'feature/phase-4-') || startsWith(github.ref_name, 'feature/phase-5-') || github.ref_name == 'feature/tidb-hosted-review'
         shell: bash
         run: |
           set -euo pipefail
@@ -81,7 +86,7 @@ jobs:
           fi
           # Enable registration only for this isolated test JVM, never the build/job.
           APP_ALLOW_REGISTRATION=true mvn -B -ntp -Dtest=LocalAuthMySqlIT test
-          if [[ "$GITHUB_REF_NAME" == feature/phase-5-* || "$GITHUB_REF_NAME" == feature/tidb-hosted-review ]]; then
+          if [[ "$GITHUB_EVENT_NAME" == pull_request || "$GITHUB_REF_NAME" == main || "$GITHUB_REF_NAME" == feature/phase-5-* || "$GITHUB_REF_NAME" == feature/tidb-hosted-review ]]; then
             APP_ALLOW_REGISTRATION=false APP_DEMO_WORKFLOWS=true mvn -B -ntp -Dtest=DemoMySqlIT test
             APP_ALLOW_REGISTRATION=false APP_DEMO_WORKFLOWS=false mvn -B -ntp -Dtest=ReviewMySqlIT test
           fi
