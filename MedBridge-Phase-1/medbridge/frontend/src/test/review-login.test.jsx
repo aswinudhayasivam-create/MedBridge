@@ -13,7 +13,7 @@ it('shows separate private review entry without the public local account selecto
  expect(screen.getByLabelText('Private review invitation key')).toHaveAttribute('type','password');
  expect(screen.queryByRole('button',{name:'Donor',exact:true})).not.toBeInTheDocument();
  expect(screen.queryByRole('button',{name:'Admin',exact:true})).not.toBeInTheDocument();
- expect(screen.getByText(/expires after 26 October/)).toBeInTheDocument();
+ expect(screen.getByText(/expires at the end of 22 November/)).toBeInTheDocument();
 });
 it('uses the privately entered gate before explicit login and never autofills public credentials',async()=>{
  const gate=crypto.randomUUID()+crypto.randomUUID();

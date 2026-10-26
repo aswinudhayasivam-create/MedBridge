@@ -66,7 +66,7 @@ describe('isolated PDF-inspired demo screens',()=>{
     fireEvent.click(screen.getByRole('navigation',{name:'Demo workspace'}).querySelector('a[href="/browse"]'));
     await waitFor(()=>expect(screen.getByRole('heading',{name:'Browse donations',exact:true})).toBeInTheDocument());
     expect(screen.queryByText('Only a notification')).not.toBeInTheDocument();
-    expect(screen.queryByText('Label manually confirmed · OCR not performed')).not.toBeInTheDocument();
+    expect(screen.queryByText('Label details confirmed by donor · assisted OCR suggestion only')).not.toBeInTheDocument();
     await waitFor(()=>expect(finishBrowse).toBeTypeOf('function'));await act(async()=>finishBrowse([]));
   });
 });
