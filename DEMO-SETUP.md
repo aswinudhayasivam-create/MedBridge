@@ -5,7 +5,7 @@ Branch: `feature/phase-5-8-demo-mvp`. Preserve all Phase 4 commits; do not push,
 
 ## Prerequisites
 
-Use the existing Java 17, Maven, Node 24, Docker Desktop Linux engine and cached MySQL 8.4 image. Do not use Aiven, Render or production credentials. Dependencies must be installed/cached before going offline. No runtime CDN, geocoding or OCR service is required. The demo uses local/system fonts and a bundled botanical SVG pattern.
+Use the existing Java 17, Maven, Node 24, Docker Desktop Linux engine and cached MySQL 8.4 image. Do not use Aiven, Render or production credentials. Dependencies must be installed/cached before going offline. No geocoding or hosted OCR service is required. Assisted OCR runs fully in the browser and downloads its static engine assets from a public CDN on first use; offline, manual confirmation remains. The demo uses local/system fonts and a bundled botanical SVG pattern.
 
 In a PowerShell terminal:
 
@@ -34,7 +34,7 @@ The backend launcher keeps `APP_ALLOW_REGISTRATION=false` and independently opts
 
 First demo startup adds five local-only detail/audit tables; it does not reset existing tables or delete prior records. Demo accounts are seeded once with BCrypt and fictional coordinates, and restart preserves approvals/data. If a seed account already exists its password and state are not silently overwritten. NGO verification is always fictional, not regulatory approval.
 
-The photo step provides `/demo-synthetic-label.png` for download and re-upload. The supplied expiry is 2027-08-01. Use a future date at least three months away when demonstrating later. PNG/JPEG validation and metadata-stripping re-encoding run on the backend. OCR is NOT performed; manually confirm the candidate fields. No third-party image service is contacted.
+The photo step provides `/demo-synthetic-label.png` for download and re-upload. The supplied expiry is 2027-08-01. Use a future date at least three months away when demonstrating later. PNG/JPEG validation and metadata-stripping re-encoding run on the backend. Assisted in-browser OCR suggests the candidate fields; the donor confirms them manually. No third-party image service receives the label.
 
 ## Tests
 

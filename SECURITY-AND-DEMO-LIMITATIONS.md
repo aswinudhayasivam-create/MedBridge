@@ -27,7 +27,7 @@ Review seeding runs only after database proof, uses BCrypt and preserves existin
 
 ## Known limitations
 
-This is a fictional college evaluation, not a medically validated service. OCR is not performed. Screening is not proof of medicine quality, legality, storage integrity or recipient eligibility. No real medicine, patient information, donor address, payment or physical transfer is allowed.
+This is a fictional college evaluation, not a medically validated service. Assisted in-browser OCR only suggests label text and the donor confirms it; suggestions are not proof of medicine quality, legality, storage integrity or recipient eligibility. No real medicine, patient information, donor address, payment or physical transfer is allowed.
 
 Received equals simulated collection. Confirmation may occur before the illustrative appointment time. Terminal re-requesting by the same NGO is blocked by the original unique constraint. Abandoned synthetic uploads and fictional test notifications/audit history can remain until an approved dedicated-data reset. Design follows the supplied PDFs closely, with explicit safety text and system-font fallbacks; it is not a pixel-perfect reproduction.
 

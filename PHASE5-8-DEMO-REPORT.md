@@ -85,7 +85,7 @@ The runner validates the exact existing local-auth environment before running th
 
 The browser found a transient route-data/key warning, which was fixed and regression-tested. A fresh login → notifications → browse check then had no console warnings/errors. The deliberate wrong-code request returned its expected rejection; it was not an unexpected application failure. No Vercel feedback or hosted service traffic was involved in local QA. No production registration or login request was made.
 
-The dependency/runtime services are local and cached; the application has no remote OCR/geocoding dependency. A physical internet-disconnect test was not performed. Registry audits and first-time dependency/image installation still require internet. Local/system font fallbacks remain readable offline.
+The dependency/runtime services are local and cached; the backend has no remote OCR/geocoding dependency; assisted label OCR runs client-side in the donor's browser. A physical internet-disconnect test was not performed. Registry audits and first-time dependency/image installation still require internet. Local/system font fallbacks remain readable offline.
 
 ## PDF comparison checklist
 
@@ -97,7 +97,7 @@ All 19 pages were rendered and visually inspected, including desktop and phone s
 | Donor 2 | Real login form plus required local-only fictional account selector |
 | Donor 3 | Database-derived dashboard cards and recent donations |
 | Donor 4 | Responsive basics form with category/unit and three-month backend rule |
-| Donor 5 | Synthetic label preview and explicit confirmation; honest manual fallback instead of fake OCR |
+| Donor 5 | Synthetic label preview and explicit confirmation; assisted browser OCR suggestion, always donor-confirmed |
 | Donor 6 | Sealed/storage/declaration controls and final review |
 | Donor 7 | Submitted status/timeline plus actual admin review screen |
 | Donor 8 | Persisted approval and verified-NGO discovery eligibility |
@@ -119,7 +119,7 @@ This is a close implementation of the design direction, not a claim of pixel-per
 
 Actual browser captures are provided under `docs/demo-screenshots/`; filenames describe the walkthrough stage. They show real React screens backed by MySQL, not fabricated reference images. Some captures show different notification counts as the real journey and integration checks produced additional fictional events.
 
-- OCR was intentionally not implemented: no Tesseract executable/trained-data installation was found, and no external/paid OCR service was used. The manual fallback is labeled throughout.
+- Assisted OCR uses Tesseract.js in the donor's browser; no Tesseract server installation and no external/paid OCR service is used. Suggestions are labeled and require explicit donor confirmation.
 - This is a local college demonstration, not production account activation or medical clearance. Production compliance, abuse prevention and durable/revocable sessions remain out of scope.
 - No physical internet-disconnect test or assistive-technology audit was performed; keyboard semantics, labels, focus styles and responsive overflow were checked, with manual date entry available.
 - Historical fictional test notifications/audit entries and abandoned synthetic image uploads may remain locally. No automatic purge/reset or destructive cleanup was added.

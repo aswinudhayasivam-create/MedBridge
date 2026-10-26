@@ -48,7 +48,7 @@ sequenceDiagram
 
 Review requests pass a private invitation-key filter before JWT authentication. Login is bounded to 10 attempts/minute per socket peer; API calls to 300/minute, with at most 2048 current peer buckets. Forwarded IP headers are not trusted. Behind Render this can impose a shared quota; it is basic protection, not distributed DDoS prevention. Process restart resets counters, while Vercel protection and private credentials remain required.
 
-Every review API request rechecks configuration and server time. At or after `2026-10-26T18:30:00Z`, requests and readiness fail closed even with a previously issued JWT. The deadline cannot be configured later. No scheduled cloud job or frontend clock is required to enforce it.
+Every review API request rechecks configuration and server time. At or after `2026-11-22T18:30:00Z`, requests and readiness fail closed even with a previously issued JWT. The deadline cannot be configured later. No scheduled cloud job or frontend clock is required to enforce it.
 
 ## Persistence and isolation
 

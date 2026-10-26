@@ -87,7 +87,7 @@ flowchart LR
 
 1. Authenticate as a fictional donor.
 2. Enter medicine/form/category, quantity/unit, batch and expiry at least three months away.
-3. Upload the bundled synthetic label and explicitly confirm its details. OCR is **not** performed.
+3. Upload the bundled synthetic label. Assisted on-device OCR may suggest its details in the browser; the donor explicitly confirms them.
 4. Declare sealed condition and fictional storage, review and submit.
 5. Follow administrator review and incoming verified-NGO requests.
 6. Accept/decline, schedule a simulated collection and retrieve the donor-only code.
@@ -197,11 +197,11 @@ Latest local verification: [PROJECT-STATUS.md](https://github.com/aswinudhayasiv
 
 ## 18. Project limitations
 
-OCR is an honest manual fallback. NGO verification and medicine screening are fictional, not medical/regulatory approval. Collection and receipt are one simulated transition. The same NGO cannot re-request a listing after a terminal decision because the original uniqueness constraint is retained. Review quotas are process-local and may be shared behind a proxy; free hosting has cold starts. Hosted connectivity, TLS CA, database recovery and reviewer exposure remain unverified pending approval.
+Assisted in-browser OCR only suggests label text; the donor always confirms it. NGO verification and medicine screening are fictional, not medical/regulatory approval. Collection and receipt are one simulated transition. The same NGO cannot re-request a listing after a terminal decision because the original uniqueness constraint is retained. Review quotas are process-local and may be shared behind a proxy; free hosting has cold starts. Hosted connectivity, TLS CA, database recovery and reviewer exposure remain unverified pending approval.
 
 ## 19. Future enhancements
 
-Formal medicine/legal review, real NGO identity validation, revocable sessions, audited migrations/backups, stronger distributed abuse controls, independent received status, accessible user testing and calibrated OCR assistance. Public accounts and physical transfers require a separate approved release; the review deadline must not be extended as a shortcut.
+Formal medicine/legal review, real NGO identity validation, revocable sessions, audited migrations/backups, stronger distributed abuse controls, independent received status and accessible user testing. Public accounts and physical transfers require a separate approved release; the review deadline must not be extended as a shortcut.
 
 ## 20. Contributors and project status
 

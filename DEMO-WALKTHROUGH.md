@@ -5,7 +5,7 @@ All accounts, labels, locations and collections are fictional. No medical/regula
 1. Explain the boundary: React dev server on 127.0.0.1:5173 → Java 17 Spring Boot on 127.0.0.1:8080 → isolated MySQL on 127.0.0.1:13306. Public registration remains false. Production build guards remove the demo entry and public demo credentials.
 2. Select Donor on Login; show that autofill is not automatic sign-in. Click Login as Meera. Dashboard counts come from MySQL rather than the PDF illustrations.
 3. Start New donation. Enter a synthetic name, form, category, quantity/unit, batch and expiry at least three months away. Demonstrate the native picker or manual date fallback.
-4. Download and upload the synthetic label. Explain the image validation and honest manual OCR fallback. Confirm the name/batch/expiry explicitly.
+4. Download and upload the synthetic label. Explain the image validation and the assisted in-browser OCR suggestion. The donor confirms the name/batch/expiry explicitly; nothing is auto-accepted.
 5. Confirm sealed condition, fictional storage and the synthetic-only declaration. Review and submit. Show the persisted Submitted for review timeline; it is not yet available to NGOs.
 6. Sign out and log in as Admin. Open Medicine review, inspect the label/declarations, enter a fictional review note and approve. Discuss server-side role checks and the audit event.
 7. Open NGO applications. Explain GreenCross's fictional verification and HopeCare's pending status. A pending NGO can apply; only the administrator can approve/reject it.
@@ -21,7 +21,7 @@ All accounts, labels, locations and collections are fictional. No medical/regula
 ## Useful viva answers
 
 - Why not use Aiven for the demo? Isolation prevents public test credentials and fictional medical records from reaching production.
-- Does the image prove medicine safety? No. It is a synthetic label, manually confirmed; no OCR or medical evaluation is claimed.
+- Does the image prove medicine safety? No. It is a synthetic label with donor-confirmed details; assisted OCR only suggests text on the donor's device, and no medical evaluation is claimed.
 - Is an NGO approval real? No. It changes fictional local demo permissions only.
 - Can a frontend user forge their role? Tokens identify an account; the backend reloads role/verification from MySQL and checks ownership for each transition.
 - Why encrypt as well as hash the code? BCrypt verifies attempts; authenticated encryption permits donor-only redisplay after sign-out/restart without plaintext database storage.

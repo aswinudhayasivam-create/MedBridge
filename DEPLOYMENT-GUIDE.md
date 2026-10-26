@@ -79,7 +79,7 @@ Enter values privately in the dedicated Render service, never GitHub/chat/README
 | `REVIEW_ENABLED` | `true` only for this dedicated review service |
 | `REVIEW_PURPOSE` | `FICTIONAL_COLLEGE_REVIEW_ONLY` |
 | `REVIEW_TRANSPORT` / `REVIEW_BIND_ADDRESS` | `hosted-tls` / `0.0.0.0` |
-| `REVIEW_EXPIRES_AT` | `2026-10-26T18:30:00Z` or earlier; never later |
+| `REVIEW_EXPIRES_AT` | `2026-11-22T18:30:00Z` or earlier; never later |
 | `REVIEW_DB_HOST` | Exact approved dedicated Aiven hostname, no protocol |
 | `REVIEW_DB_URL` | `jdbc:mysql://<approved-host>:<port>/medbridgereview20261026?sslMode=VERIFY_IDENTITY&serverTimezone=UTC` |
 | `REVIEW_DB_USERNAME` / `REVIEW_DB_PASSWORD` | Dedicated `mb_review_...` DML-only user / distinct private random password (>=24 characters) |
