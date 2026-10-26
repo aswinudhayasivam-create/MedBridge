@@ -1,151 +1,210 @@
 # MedBridge — Smart Medicine Redistribution Network
 
-MedBridge is a **donation-only** sample application connecting donors with verified NGO/clinic receivers. **No selling, resale, checkout, prices or payments.** The later informational estimated donation value is not a transaction price.
+> **GitHub branch guide:** You are viewing the default `main` README. The complete Phase 5–8 React/Spring Boot source, the TiDB migration, and the documents linked below currently live on **[`feature/tidb-hosted-review`](https://github.com/aswinudhayasivam-create/MedBridge/tree/feature/tidb-hosted-review)**. The `main` source tree is an earlier Phase 1 snapshot and must **not** be represented as the deployed full-stack application. Do not use `main` to run the latest local demo. This README is updated independently of application code; a tested, history-preserving integration into `main` remains a separate step.
 
-## Project status
+## Website and source code
 
-**Phase 1 complete:** Spring Boot and React/Vite starters, MySQL schema, idempotent demo seed data, setup and health endpoint. No production workflow or authentication is implemented yet. Phase 2 adds role models and JWT authentication; Phases 3–8 implement the remaining features.
+**[Open the MedBridge website (Vercel frontend)](https://med-bridge-ruddy.vercel.app/)** · **[GitHub repository](https://github.com/aswinudhayasivam-create/MedBridge)** · [Local demo setup](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-SETUP.md) · [Project status](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/PROJECT-STATUS.md)
 
-## Prerequisites
+> **Deployment note (October 26, 2026):** The website link points to the existing Vercel frontend and is also configured in this repository's GitHub About section. The complete hosted donor–admin–NGO journey is **not yet verified**: the restricted TiDB application account, 11-table review schema, new Render deployment, and protected review frontend still need acceptance. The public local demo passwords below **do not work in hosted review mode**. Never treat this prototype as a real medicine distribution service.
 
-- JDK 17 (`java -version`)
-- Maven 3.9+ (`mvn -version`)
-- MySQL 8.0+ running locally
-- Node.js 20+ and npm (`node -v`, `npm -v`)
-- Tesseract language pack will be required starting Phase 3
+## Demo login details — local development only
 
-## 1. Create the database and restricted local user
+These are deliberately public **fictional local-only** credentials for the tested local MySQL demo. They are rejected by protected hosted-review mode; hosted reviewer passwords and the invitation key are private and must **never** be added to GitHub.
 
-In the MySQL CLI as an administrator:
+| Demo role | Email | Password |
+| --- | --- | --- |
+| **Donor (Meera)** | `meera@medbridge.test` | `DemoDonor2026!` |
+| **Verified NGO (Divya)** | `divya@medbridge.test` | `DemoNgo2026!` |
+| Pending NGO (HopeCare) | `pending@medbridge.test` | `DemoPending2026!` |
+| Administrator | `admin@medbridge.test` | `DemoAdmin2026!` |
 
-```sql
-CREATE DATABASE IF NOT EXISTS medbridge CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER IF NOT EXISTS 'medbridge'@'localhost' IDENTIFIED BY 'change_me';
-GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX, REFERENCES ON medbridge.* TO 'medbridge'@'localhost';
+**To sign in locally:** follow [DEMO-SETUP.md](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-SETUP.md), start the database, Spring Boot and Vite frontend using `scripts/phase5-demo.ps1`, then visit `http://127.0.0.1:5173/login`. These accounts are **not** public online accounts. See [DEMO-LOGIN.md](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-LOGIN.md) for local isolation and safeguards.
+
+## Hosted database status
+
+The hosted review is migrating from Aiven to a $0 MySQL-compatible TiDB Cloud Starter instance. The empty review database was created, and authenticated TiDB TLS/SQL compatibility probes passed. The restricted runtime user and 11 application tables still require verification; do not deploy a backend with administrator credentials or assume the online workflow works. Public registration remains disabled, and the protected review expires **October 27, 2026 at 00:00 IST**.
+
+See [TiDB migration checklist](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/docs/TIDB-REVIEW-MIGRATION.md), [deployment guide](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEPLOYMENT-GUIDE.md), and [project status](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/PROJECT-STATUS.md). Aiven files remain as legacy references and must not be used to initialize TiDB.
+
+**A donation-only full-stack application connecting donors with verified fictional NGO/clinic receivers.**
+
+React / Vite · Java 17 / Spring Boot 3 · Spring Security / JWT / BCrypt · MySQL 8 (local) / TiDB Starter (hosted target)
+
+> **Evaluation status:** the complete local workflow is verified. A separate protected online review mode is implemented for deployment preparation; **no working hosted review environment or URL is claimed**. Registration, payments and physical medicine transfers are disabled. The online review window ends after October 26, 2026 in Asia/Kolkata time.
+
+[Commit manifest](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/COMMIT-MANIFEST.md) · [Demo logins](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-LOGIN.md) · [Setup](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-SETUP.md) · [Viva walkthrough](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-WALKTHROUGH.md) · [Project status](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/PROJECT-STATUS.md) · [Deployment guide](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEPLOYMENT-GUIDE.md)
+
+## 1. Project overview
+
+The implemented receiver account role is NGO. MedBridge implements controlled listing, screening, geographic discovery, requests, donor decisions and code-confirmed **simulated** handover. Every meaningful action calls Spring Boot and persists in MySQL. It is an engineering demonstration, not an operational medicine distribution service or medical clearance system.
+
+## 2. Problem statement
+
+Uncoordinated surplus-medicine offers lack reliable ownership, condition declarations, expiry checks, receiver verification and traceable decisions. A useful system needs a controlled workflow rather than an unreviewed public catalogue.
+
+## 3. Proposed solution
+
+A donor submits a synthetic listing; an administrator screens it; verified fictional NGOs discover eligible nearby records and request a quantity. The donor accepts or declines, schedules an illustrative collection and shares a private four-digit code. Correct confirmation records a simulated collection and receipt, with notifications and an audit trail.
+
+## 4. Major features
+
+| Area | Implemented behavior |
+| --- | --- |
+| Donor | Database-derived dashboard, four-step submission, synthetic image validation, declarations, history and requests |
+| NGO | Pending/verified permissions, Haversine discovery within 10 km, distance/category/expiry filters, quantity/note requests |
+| Administrator | Restricted login, NGO approval/rejection, medicine screening, account overview, request monitoring and audit events |
+| Handover | Transactional reservations, simulated scheduling, donor-only four-digit code, expiry and five-attempt lockout |
+| Persistence | MySQL records, notifications/read state and completion survive backend restart |
+| Review preparation | Separate identities/database, private invitation gate, server cutoff, rate limits and readiness checks |
+
+## 5. Technology stack
+
+| Layer | Technology |
+| --- | --- |
+| Frontend | React 18, Vite, React Router, Tailwind toolchain, reusable CSS and Lucide icons |
+| Backend | Spring Boot 3, Java 17, Spring MVC, Spring Security, JDBC/JPA |
+| Authentication | BCrypt passwords, signed expiring JWTs, server-loaded roles and verification |
+| Database | MySQL 8 / InnoDB locally; TiDB Cloud Starter (MySQL compatible) for the planned hosted review |
+| Validation | JUnit/Mockito/MockMvc, Testcontainers, Vitest/Testing Library, Node safety tests, npm audits |
+| Hosting target | Vercel frontend, protected Render review backend, isolated TiDB review database; full deployment not yet verified |
+
+## 6. System architecture
+
+```mermaid
+flowchart LR
+    B[React browser UI] -->|JSON / multipart + JWT| A[Spring Boot API]
+    A --> G[Environment / invitation / expiry guards]
+    G --> R[Role + verification + ownership checks]
+    R --> S[Shared workflow service]
+    S --> D[(Local MySQL / hosted TiDB)]
+    S --> N[Notifications + audit events]
 ```
 
-For local demo simplicity, the application runs `schema.sql` and `data.sql` automatically. Both use `IF NOT EXISTS` / `INSERT IGNORE`, so restarting will not duplicate sample rows. Existing modified rows are left untouched. **Do not use automatic seeding in production.** Replace this mechanism with database migrations in a later phase.
+[SYSTEM-ARCHITECTURE.md](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/SYSTEM-ARCHITECTURE.md) distinguishes local, review and unchanged hosted environments, including startup and request-time boundaries.
 
-## 2. Run the backend
+## 7. Donor workflow
 
-From `backend/`, create environment variables in your shell (Spring Boot does not read `.env` automatically):
+1. Authenticate as a fictional donor.
+2. Enter medicine/form/category, quantity/unit, batch and expiry at least three months away.
+3. Upload the bundled synthetic label and explicitly confirm its details. OCR is **not** performed.
+4. Declare sealed condition and fictional storage, review and submit.
+5. Follow administrator review and incoming verified-NGO requests.
+6. Accept/decline, schedule a simulated collection and retrieve the donor-only code.
+7. Inspect persisted completion and notifications.
 
-```bash
-# Linux/macOS
-export DB_URL='jdbc:mysql://localhost:3306/medbridge?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC'
-export DB_USERNAME='medbridge'
-export DB_PASSWORD='change_me'
-mvn spring-boot:run
-```
+## 8. NGO workflow
 
-Windows PowerShell equivalent:
+1. Authenticate; pending NGOs remain restricted until fictional administrator verification.
+2. Browse approved, unexpired, available records within 10 km.
+3. Apply within-5-km, greater-than-six-month expiry and category filters.
+4. Request an available quantity with a note; follow the real persisted timeline.
+5. Enter the donor's correct code to confirm a simulated collection/receipt.
+
+## 9. Administrator workflow
+
+Review NGO applications and medicine declarations/photos, approve or reject fictional records, and inspect accounts, requests and audit events. Public ADMIN registration is unavailable; client-side roles cannot grant backend access.
+
+## 10. Screenshots
+
+Actual application captures from the completed local walkthrough; illustrated counts reflect their capture stage, not hardcoded current totals.
+
+![Donor dashboard](https://raw.githubusercontent.com/aswinudhayasivam-create/MedBridge/feature/tidb-hosted-review/docs/demo-screenshots/donor-dashboard-desktop.jpg)
+
+| Verified NGO discovery | Mobile discovery |
+| --- | --- |
+| ![NGO discovery](https://raw.githubusercontent.com/aswinudhayasivam-create/MedBridge/feature/tidb-hosted-review/docs/demo-screenshots/ngo-browse-desktop.jpg) | ![Mobile NGO discovery](https://raw.githubusercontent.com/aswinudhayasivam-create/MedBridge/feature/tidb-hosted-review/docs/demo-screenshots/ngo-browse-mobile.jpg) |
+
+[All 27 screenshots and responsive evidence](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/docs/demo-screenshots/README.md). The [donor](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/docs/design-reference/MedBridge-How-It-Works-Donors.pdf) and [NGO](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/docs/design-reference/MedBridge-How-It-Works-NGOs.pdf) references informed real components; no flattened PDF screenshot acts as the interface.
+
+## 11. Demo credentials
+
+The **Donor**, **Verified NGO**, **Pending NGO**, and **Administrator** local demo emails and passwords are listed near the top under [Demo login details](#demo-login-details--local-development-only). See [DEMO-LOGIN.md](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-LOGIN.md) for the exact local-only identity restrictions. Hosted review accounts and their invitation key are private; no usable hosted credentials are published.
+
+## 12. Online demo
+
+**Pending deployment and exposure approval. No verified hosted review URL is available.**
+
+The intended evaluation runs independently of a home computer: protected Vercel frontend → dedicated Render review API → isolated persistent MySQL. It uses the same functional screens and service logic. Server configuration, a dedicated database marker/restricted user, invitation key, JWT authorization and expiration must all pass. See [DEPLOYMENT-GUIDE.md](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEPLOYMENT-GUIDE.md) for approvals and exact settings. The old Phase 2 backend is not a review target.
+
+## 13. Local setup
+
+**Before using the steps below, check out the complete source branch:**
 
 ```powershell
-$env:DB_URL='jdbc:mysql://localhost:3306/medbridge?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC'
-$env:DB_USERNAME='medbridge'
-$env:DB_PASSWORD='change_me'
-mvn spring-boot:run
+git fetch origin feature/tidb-hosted-review
+git switch feature/tidb-hosted-review
 ```
 
-Health check: visit <http://localhost:8080/api/health> or run:
+Prerequisites: existing Java 17, Maven, Node 24, Docker Desktop Linux engine and MySQL 8 image. Install project dependencies before offline use. Select Java 17 in the current terminal.
 
-```bash
-curl http://localhost:8080/api/health
+```powershell
+# Repository root, terminal 1:
+.\scripts\phase5-demo.ps1 -Action Database
+.\scripts\phase5-demo.ps1 -Action Backend
+# Terminal 2:
+.\scripts\phase5-demo.ps1 -Action Frontend
 ```
 
-Expected response: `{"application":"MedBridge","phase":"1","status":"UP"}` (JSON key order is not guaranteed). All other API paths are intentionally denied until authentication is built.
+Open `http://127.0.0.1:5173/login`. The selector autofills; Login performs real MySQL authentication. [Detailed local setup](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-SETUP.md) covers private configuration, testing, persistence and the separate disposable review rehearsal. No production credentials are needed.
 
-## 3. Run the frontend
+## 14. API overview
 
-In a **second terminal**, from `frontend/`:
+| Group | Examples |
+| --- | --- |
+| Authentication | `POST /api/auth/login`, `GET /api/auth/me`; registration disabled |
+| Donations | `POST /api/demo/medicines`, `POST /api/demo/photos`, admin review and persisted events |
+| Discovery / requests | `GET /api/demo/browse`, request, decision and scheduling endpoints |
+| Completion | Donor-only code retrieval; requesting NGO's attempt-limited confirmation |
+| Administration | NGO verification, account summary and audit monitoring |
+| Review guard | Protected capability plus minimal database readiness endpoint |
 
-```bash
-npm install
-npm run dev
-```
+See [API-DOCUMENTATION.md](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/API-DOCUMENTATION.md) for methods, permissions, payloads and error handling. No public reset or seed endpoint exists.
 
-Visit <http://localhost:5173>. The Phase 1 starter screen renders. The Vite development proxy forwards `/api/*` to `http://localhost:8080`.
+## 15. Database structure
 
-## 4. Inspect seeded data
+Five core tables: `users`, `ngo_profiles`, `medicines`, `requests`, `notifications`.
 
-Run in MySQL:
+Five workflow extensions: `demo_medicine_details`, `demo_photos`, `demo_request_details`, `demo_events`, `demo_ngo_applications`.
 
-```sql
-USE medbridge;
-SELECT role, COUNT(*) AS total FROM users GROUP BY role;
-SELECT status, COUNT(*) AS total FROM medicines GROUP BY status;
-SELECT u.email, p.org_name, u.verified FROM users u JOIN ngo_profiles p ON p.ngo_id = u.user_id;
-```
+Dedicated review adds `review_environment` as an isolation/schema/expiry marker. Foreign keys, quantity constraints and row-lock reservation prevent unauthorized or overcommitted transitions. Label images are re-encoded BLOBs, independent of Render's ephemeral disk. No hosted initialization or migration has been run.
 
-Demo fixtures: **1 admin, 3 donors, 4 fictional NGOs, 10 medicines, 2 requests, 3 notifications**. Three fictional NGO accounts have `verified=1`; the fourth is unverified for verification-flow testing. Coordinates are illustrative around Coimbatore and do **not** correspond to verified actual medical providers.
+## 16. Security features
 
-All demo users: password `MedBridgeDemo123!` stored as BCrypt hash. Example: `admin@medbridge.test` (login is not available until Phase 2). The `.test` addresses will not deliver email. Never reuse the demo password or load the seed fixtures into production.
+- Public registration disabled by default; no public administrator signup.
+- Exact local-auth guard and local-only `@medbridge.test` identity policy preserved.
+- Review profile defaults disabled, rejects ordinary/local identities and requires a proven dedicated database and private gate.
+- Server-enforced review deadline: **2026-10-27 00:00 Asia/Kolkata**, equivalent to **2026-10-26 18:30 UTC**. Existing JWTs do not bypass expiry.
+- BCrypt hashes, in-memory browser JWTs, ownership/role/verification checks and bounded handoff attempts.
+- Hosted review database requires hostname-verifying TLS and restricted DML permissions; no startup schema reset.
+- Bounded per-peer rate limiting, safe errors, no-store responses and exact CORS origin.
 
-## Database diagram
+[Security and limitations](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/SECURITY-AND-DEMO-LIMITATIONS.md) explains residual risks and future real-user requirements.
 
-```text
-users (user_id PK) ─── 1:1 ─── ngo_profiles (ngo_id PK/FK)
-       │
-       ├── 1:N ─── medicines (donor_id FK)
-       │                │
-       │                └── 1:N ─── requests (medicine_id FK)
-       │                                │
-       ├────────────────────────────────┘ receiver_id FK
-       │
-       └── 1:N ─── notifications (user_id FK)
-```
+## 17. Testing results
 
-## Roles and planned workflow
+Latest local verification: [PROJECT-STATUS.md](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/PROJECT-STATUS.md). All reported numbers are from actual commands. Both GitHub Actions workflows passed for the published TiDB branch; actual hosted workflow acceptance remains separate.
 
-- **DONOR:** list medicines, confirm OCR fields, approve/decline NGO requests, donation history.
-- **NGO:** browse eligible nearby listings, request medicine, confirm collection.
-- **ADMIN:** verify NGOs, review flags, moderate users and view aggregate impact statistics.
+| Check | Latest result |
+| --- | --- |
+| Java 17 Maven verification | 139 passed in latest TiDB migration preparation; not an end-to-end hosted acceptance test |
+| Local demo / original authentication / review MySQL integration | 3 / 1 / 5 passed; schema checks passed |
+| Vitest | 51 passed |
+| Frontend safety | 16 passed |
+| npm audit / production-only audit | 0 vulnerabilities in both |
+| Production and explicit review builds | Passed, including deliberately misconfigured flag regressions |
+| Browser / restart / responsive checks | Passed locally; review rehearsal completed; both databases unchanged across backend restart; 120 review overflow checks passed |
 
-Medicine statuses: `LISTED → FLAGGED → APPROVED/REJECTED`, or `LISTED → APPROVED → MATCHED → REQUESTED → COMPLETED`. Declining a request returns the medicine to `MATCHED` if still eligible. Request rows have their own `PENDING`, `APPROVED`, `DECLINED`, `COLLECTED`, `CANCELLED` statuses. Status transitions must be implemented transactionally in Phase 4.
+## 18. Project limitations
 
-## Important safety constraints
+OCR is an honest manual fallback. NGO verification and medicine screening are fictional, not medical/regulatory approval. Collection and receipt are one simulated transition. The same NGO cannot re-request a listing after a terminal decision because the original uniqueness constraint is retained. Review quotas are process-local and may be shared behind a proxy; free hosting has cold starts. Hosted connectivity, TLS CA, database recovery and reviewer exposure remain unverified pending approval.
 
-This is an educational prototype, **not authorization to redistribute drugs**. Laws vary by jurisdiction. In India and elsewhere, medicine collection/distribution may require licensed partners, permitted supply chains, correct storage, tamper-evident packaging, batch traceability, recall checks, and a pharmacist's review. The intended safety filter is only an initial screening step, **not a medical or legal clearance**. Controlled medicines and items barred by applicable rules must never become transferable by admin override. Near-expiry medicines must be reviewed and also satisfy any minimum remaining shelf life at handover. Implement all compliance controls before any real deployment. OCR is assistive, and manual confirmation plus provenance checks are required. Do not disclose donor home coordinates to other users.
+## 19. Future enhancements
 
-## Phase map
+Formal medicine/legal review, real NGO identity validation, revocable sessions, audited migrations/backups, stronger distributed abuse controls, independent received status, accessible user testing and calibrated OCR assistance. Public accounts and physical transfers require a separate approved release; the review deadline must not be extended as a shortcut.
 
-1. **Foundation:** this phase.
-2. JWT authentication, roles, User and NGO entities.
-3. Medicine upload, Tess4J OCR, safety checks, estimated value reference.
-4. Distance matching, transactional requests, email/in-app notifications, admin API.
-5. JUnit 5 and Mockito tests.
-6. Shared React UI library, public pages and authentication UX.
-7. Donor, NGO and admin dashboards connected to API.
-8. Loading, accessibility, animations and deployment guidance.
+## 20. Contributors and project status
 
-## File layout
+Maintainer: **Aswin Udhaya** ([aswinudhayasivam-create](https://github.com/aswinudhayasivam-create)). Current work: [`feature/tidb-hosted-review`](https://github.com/aswinudhayasivam-create/MedBridge/tree/feature/tidb-hosted-review); all historical commits are preserved. Each new commit changes exactly one file.
 
-```text
-medbridge/
-├── backend/
-│   ├── pom.xml
-│   ├── .env.example
-│   └── src/
-│       ├── main/
-│       │   ├── java/com/medbridge/
-│       │   │   ├── MedBridgeApplication.java
-│       │   │   ├── config/StartupSecurityConfig.java
-│       │   │   ├── controller/HealthController.java
-│       │   │   └── {model,dto,repository,service,security,exception}/ (Phase 2+)
-│       │   └── resources/{application.properties,schema.sql,data.sql}
-│       └── test/java/com/medbridge/ (Phase 5)
-├── frontend/
-│   ├── package.json
-│   ├── vite.config.js
-│   ├── postcss.config.js
-│   ├── tailwind.config.js
-│   ├── index.html
-│   ├── .env.example
-│   └── src/
-│       ├── main.jsx
-│       ├── App.jsx
-│       ├── index.css
-│       └── {components,pages,context,hooks,services,assets}/ (Phase 6+)
-├── .gitignore
-└── README.md
-```
+This is a college engineering demonstration for October 26, 2026. Local implementation and TiDB database compatibility are verified; the complete hosted evaluation is still pending. The TiDB migration branch is published, but it has not been merged into `main`. No production account activation or end-to-end hosted success is implied.
