@@ -1,14 +1,33 @@
 # MedBridge — Smart Medicine Redistribution Network
 
-## TiDB review migration (local preparation)
+## Website and source code
 
-The planned hosted review database is moving from Aiven to an eligible $0 MySQL-compatible TiDB Cloud Starter instance. Existing React, Spring Boot, local demo accounts and workflows are retained. Hosted review is intentionally blocked until the exact instance/prefix is pinned and TiDB-backed tests pass. No cloud resources changed in this migration. Public registration stays disabled; the October 27, 00:00 IST cutoff is unchanged.
+**[Open the MedBridge website (Vercel frontend)](https://med-bridge-ruddy.vercel.app/)** · **[GitHub repository](https://github.com/aswinudhayasivam-create/MedBridge)** · [Local demo setup](DEMO-SETUP.md) · [Project status](PROJECT-STATUS.md)
 
-See [migration findings, private configuration and approval gates](docs/TIDB-REVIEW-MIGRATION.md). The Aiven setup files remain available; they are not the TiDB initialization procedure. Historical test totals below describe the earlier MySQL baseline, not proof of TiDB compatibility.
+> **Deployment note (October 26, 2026):** The website link points to the existing Vercel frontend and is also configured in this repository's GitHub About section. The complete hosted donor–admin–NGO journey is **not yet verified**: the restricted TiDB application account, 11-table review schema, new Render deployment, and protected review frontend still need acceptance. The public local demo passwords below **do not work in hosted review mode**. Never treat this prototype as a real medicine distribution service.
+
+## Demo login details — local development only
+
+These are deliberately public **fictional local-only** credentials for the tested local MySQL demo. They are rejected by protected hosted-review mode; hosted reviewer passwords and the invitation key are private and must **never** be added to GitHub.
+
+| Demo role | Email | Password |
+| --- | --- | --- |
+| **Donor (Meera)** | `meera@medbridge.test` | `DemoDonor2026!` |
+| **Verified NGO (Divya)** | `divya@medbridge.test` | `DemoNgo2026!` |
+| Pending NGO (HopeCare) | `pending@medbridge.test` | `DemoPending2026!` |
+| Administrator | `admin@medbridge.test` | `DemoAdmin2026!` |
+
+**To sign in locally:** follow [DEMO-SETUP.md](DEMO-SETUP.md), start the database, Spring Boot and Vite frontend using `scripts/phase5-demo.ps1`, then visit `http://127.0.0.1:5173/login`. These accounts are **not** public online accounts. See [DEMO-LOGIN.md](DEMO-LOGIN.md) for local isolation and safeguards.
+
+## Hosted database status
+
+The hosted review is migrating from Aiven to a $0 MySQL-compatible TiDB Cloud Starter instance. The empty review database was created, and authenticated TiDB TLS/SQL compatibility probes passed. The restricted runtime user and 11 application tables still require verification; do not deploy a backend with administrator credentials or assume the online workflow works. Public registration remains disabled, and the protected review expires **October 27, 2026 at 00:00 IST**.
+
+See [TiDB migration checklist](docs/TIDB-REVIEW-MIGRATION.md), [deployment guide](DEPLOYMENT-GUIDE.md), and [project status](PROJECT-STATUS.md). Aiven files remain as legacy references and must not be used to initialize TiDB.
 
 **A donation-only full-stack application connecting donors with verified fictional NGO/clinic receivers.**
 
-React / Vite · Java 17 / Spring Boot 3 · Spring Security / JWT / BCrypt · MySQL 8
+React / Vite · Java 17 / Spring Boot 3 · Spring Security / JWT / BCrypt · MySQL 8 (local) / TiDB Starter (hosted target)
 
 > **Evaluation status:** the complete local workflow is verified. A separate protected online review mode is implemented for deployment preparation; **no working hosted review environment or URL is claimed**. Registration, payments and physical medicine transfers are disabled. The online review window ends after October 26, 2026 in Asia/Kolkata time.
 
@@ -44,9 +63,9 @@ A donor submits a synthetic listing; an administrator screens it; verified ficti
 | Frontend | React 18, Vite, React Router, Tailwind toolchain, reusable CSS and Lucide icons |
 | Backend | Spring Boot 3, Java 17, Spring MVC, Spring Security, JDBC/JPA |
 | Authentication | BCrypt passwords, signed expiring JWTs, server-loaded roles and verification |
-| Database | MySQL 8 / InnoDB, constraints, transactional row locking |
+| Database | MySQL 8 / InnoDB locally; TiDB Cloud Starter (MySQL compatible) for the planned hosted review |
 | Validation | JUnit/Mockito/MockMvc, Testcontainers, Vitest/Testing Library, Node safety tests, npm audits |
-| Hosting target | Vercel frontend, dedicated Render review backend, isolated MySQL; deployment pending approval |
+| Hosting target | Vercel frontend, protected Render review backend, isolated TiDB review database; full deployment not yet verified |
 
 ## 6. System architecture
 
@@ -56,7 +75,7 @@ flowchart LR
     A --> G[Environment / invitation / expiry guards]
     G --> R[Role + verification + ownership checks]
     R --> S[Shared workflow service]
-    S --> D[(Dedicated MySQL)]
+    S --> D[(Local MySQL / hosted TiDB)]
     S --> N[Notifications + audit events]
 ```
 
@@ -98,16 +117,7 @@ Actual application captures from the completed local walkthrough; illustrated co
 
 ## 11. Demo credentials
 
-**Intentionally public, fictional and LOCAL-ONLY. Never reuse these passwords.**
-
-| Account | Email | Public demo password |
-| --- | --- | --- |
-| Donor / Meera | `meera@medbridge.test` | `DemoDonor2026!` |
-| Verified NGO / Divya | `divya@medbridge.test` | `DemoNgo2026!` |
-| Pending NGO / HopeCare | `pending@medbridge.test` | `DemoPending2026!` |
-| Administrator | `admin@medbridge.test` | `DemoAdmin2026!` |
-
-[DEMO-LOGIN.md](DEMO-LOGIN.md) explains the exact local isolation policy. These identities remain rejected in review and normal hosted configurations, including previously signed tokens. Hosted review accounts use a separate domain and private generated credentials; none are published here.
+The **Donor**, **Verified NGO**, **Pending NGO**, and **Administrator** local demo emails and passwords are listed near the top under [Demo login details](#demo-login-details--local-development-only). See [DEMO-LOGIN.md](DEMO-LOGIN.md) for the exact local-only identity restrictions. Hosted review accounts and their invitation key are private; no usable hosted credentials are published.
 
 ## 12. Online demo
 
@@ -164,11 +174,11 @@ Dedicated review adds `review_environment` as an isolation/schema/expiry marker.
 
 ## 17. Testing results
 
-Latest local verification: [PROJECT-STATUS.md](PROJECT-STATUS.md). All reported numbers are from actual commands; hosted verification and unpushed GitHub CI are explicitly separate.
+Latest local verification: [PROJECT-STATUS.md](PROJECT-STATUS.md). All reported numbers are from actual commands. Both GitHub Actions workflows passed for the published TiDB branch; actual hosted workflow acceptance remains separate.
 
 | Check | Latest result |
 | --- | --- |
-| Java 17 Maven verification | 124 passed |
+| Java 17 Maven verification | 139 passed in latest TiDB migration preparation; not an end-to-end hosted acceptance test |
 | Local demo / original authentication / review MySQL integration | 3 / 1 / 5 passed; schema checks passed |
 | Vitest | 51 passed |
 | Frontend safety | 16 passed |
@@ -186,6 +196,6 @@ Formal medicine/legal review, real NGO identity validation, revocable sessions, 
 
 ## 20. Contributors and project status
 
-Maintainer: **Aswin Udhaya** ([aswinudhayasivam-create](https://github.com/aswinudhayasivam-create)). Current work: `feature/phase-5-8-demo-mvp`; all historical commits are preserved. Each new commit changes exactly one file.
+Maintainer: **Aswin Udhaya** ([aswinudhayasivam-create](https://github.com/aswinudhayasivam-create)). Current work: [`feature/tidb-hosted-review`](https://github.com/aswinudhayasivam-create/MedBridge/tree/feature/tidb-hosted-review); all historical commits are preserved. Each new commit changes exactly one file.
 
-This is a college engineering demonstration for October 26, 2026. Local implementation is verified; hosted evaluation remains pending. No paid resource, cloud modification, production account activation, merge or push is implied by this README.
+This is a college engineering demonstration for October 26, 2026. Local implementation and TiDB database compatibility are verified; the complete hosted evaluation is still pending. The TiDB migration branch is published, but it has not been merged into `main`. No production account activation or end-to-end hosted success is implied.
