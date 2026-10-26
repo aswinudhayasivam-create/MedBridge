@@ -1,0 +1,18 @@
+/.local-auth/
+**/target/
+**/.env
+**/.env.local
+**/.env.*.local
+*.log
+
+# Generated private local review fixture credentials; never publish.
+/.review/
+
+# Never commit private release scripts, settings, generated credentials or local TLS files.
+/review-prep/
+**/tidb-review-settings*.json
+**/tidb-review-settings*.txt
+*.pem
+*.key
+*.p12
+*.jks

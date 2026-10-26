@@ -1,0 +1,96 @@
+name: MedBridge backend build
+on:
+  push:
+    branches: ['main', 'feature/phase-2-auth', 'feature/phase-4-*', 'feature/phase-5-*', 'feature/tidb-hosted-review']
+    paths:
+      - 'MedBridge-Phase-1/medbridge/backend/**'
+      - '.github/workflows/medbridge-backend-ci.yml'
+  pull_request:
+    branches: ['main']
+    paths:
+      - 'MedBridge-Phase-1/medbridge/backend/**'
+      - '.github/workflows/medbridge-backend-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      APP_ALLOW_REGISTRATION: 'false'
+      APP_DEMO_WORKFLOWS: 'false'
+    defaults:
+      run:
+        working-directory: MedBridge-Phase-1/medbridge/backend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+          cache-dependency-path: MedBridge-Phase-1/medbridge/backend/pom.xml
+      - name: Compile and test Spring Boot
+        run: mvn -B -ntp verify
+      - name: Phase 4 authentication against temporary local MySQL
+        if: github.event_name == 'pull_request' || github.ref_name == 'main' || startsWith(github.ref_name, 'feature/phase-4-') || startsWith(github.ref_name, 'feature/phase-5-') || github.ref_name == 'feature/tidb-hosted-review'
+        shell: bash
+        run: |
+          set -euo pipefail
+          # This step never reads repository secrets or hosted database settings.
+          PHASE4_DB_USERNAME="phase4_$(openssl rand -hex 8)"
+          PHASE4_DB_PASSWORD="$(openssl rand -hex 32)"
+          PHASE4_JWT_SECRET="$(openssl rand -hex 48)"
+          MYSQL_ROOT_PASSWORD="$(openssl rand -hex 32)"
+          export PHASE4_DB_USERNAME PHASE4_DB_PASSWORD PHASE4_JWT_SECRET MYSQL_ROOT_PASSWORD
+          for value in "$PHASE4_DB_USERNAME" "$PHASE4_DB_PASSWORD" "$PHASE4_JWT_SECRET" "$MYSQL_ROOT_PASSWORD"; do
+            printf '::add-mask::%s\n' "$value"
+          done
+          export MYSQL_DATABASE=medbridge_phase4_dev
+          export MYSQL_USER="$PHASE4_DB_USERNAME"
+          export MYSQL_PASSWORD="$PHASE4_DB_PASSWORD"
+          container_name="medbridge-phase4-ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          container_id=''
+          cleanup() {
+            if [[ -n "$container_id" ]]; then
+              docker rm --force "$container_id" >/dev/null 2>&1 || true
+            fi
+          }
+          trap cleanup EXIT
+          # The existing safety guard requires this exact loopback port/database.
+          # tmpfs prevents test data from persisting in a volume or host directory.
+          container_id="$(docker create --name "$container_name" --rm \
+            --publish 127.0.0.1:13306:3306 \
+            --tmpfs /var/lib/mysql:rw,nosuid,size=1g \
+            --env MYSQL_DATABASE --env MYSQL_USER --env MYSQL_PASSWORD --env MYSQL_ROOT_PASSWORD \
+            --health-cmd='MYSQL_PWD="$MYSQL_PASSWORD" mysql --protocol=TCP -h127.0.0.1 -u"$MYSQL_USER" -D"$MYSQL_DATABASE" -e "SELECT 1" >/dev/null 2>&1' \
+            --health-interval=5s --health-timeout=5s --health-retries=30 mysql:8.4)"
+          docker start "$container_id" >/dev/null
+          for ((attempt=0; attempt<90; attempt++)); do
+            health="$(docker inspect --format '{{.State.Health.Status}}' "$container_id")"
+            if [[ "$health" == healthy ]]; then break; fi
+            if [[ "$health" == unhealthy ]]; then
+              echo 'Temporary MySQL failed its health check.' >&2
+              exit 1
+            fi
+            sleep 2
+          done
+          if [[ "$health" != healthy ]]; then
+            echo 'Temporary MySQL did not become healthy in time.' >&2
+            exit 1
+          fi
+          # Enable registration only for this isolated test JVM, never the build/job.
+          APP_ALLOW_REGISTRATION=true mvn -B -ntp -Dtest=LocalAuthMySqlIT test
+          if [[ "$GITHUB_EVENT_NAME" == pull_request || "$GITHUB_REF_NAME" == main || "$GITHUB_REF_NAME" == feature/phase-5-* || "$GITHUB_REF_NAME" == feature/tidb-hosted-review ]]; then
+            APP_ALLOW_REGISTRATION=false APP_DEMO_WORKFLOWS=true mvn -B -ntp -Dtest=DemoMySqlIT test
+            APP_ALLOW_REGISTRATION=false APP_DEMO_WORKFLOWS=false mvn -B -ntp -Dtest=ReviewMySqlIT test
+          fi
+      - name: Check Docker startup script syntax
+        run: sh -n docker-entrypoint.sh
+      - name: Ensure Dockerfile runs startup script
+        run: grep -F 'ENTRYPOINT ["sh", "/app/docker-entrypoint.sh"]' Dockerfile

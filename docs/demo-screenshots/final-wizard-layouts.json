@@ -1,0 +1,74 @@
+[
+  {
+    "overflow": false,
+    "page": "condition",
+    "scrollWidth": 305,
+    "width": 320
+  },
+  {
+    "overflow": false,
+    "page": "condition",
+    "scrollWidth": 375,
+    "width": 375
+  },
+  {
+    "overflow": false,
+    "page": "condition",
+    "scrollWidth": 393,
+    "width": 393
+  },
+  {
+    "overflow": false,
+    "page": "condition",
+    "scrollWidth": 430,
+    "width": 430
+  },
+  {
+    "overflow": false,
+    "page": "condition",
+    "scrollWidth": 768,
+    "width": 768
+  },
+  {
+    "overflow": false,
+    "page": "condition",
+    "scrollWidth": 1280,
+    "width": 1280
+  },
+  {
+    "overflow": false,
+    "page": "review",
+    "scrollWidth": 305,
+    "width": 320
+  },
+  {
+    "overflow": false,
+    "page": "review",
+    "scrollWidth": 360,
+    "width": 375
+  },
+  {
+    "overflow": false,
+    "page": "review",
+    "scrollWidth": 378,
+    "width": 393
+  },
+  {
+    "overflow": false,
+    "page": "review",
+    "scrollWidth": 415,
+    "width": 430
+  },
+  {
+    "overflow": false,
+    "page": "review",
+    "scrollWidth": 768,
+    "width": 768
+  },
+  {
+    "overflow": false,
+    "page": "review",
+    "scrollWidth": 1280,
+    "width": 1280
+  }
+]

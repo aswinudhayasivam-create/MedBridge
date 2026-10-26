@@ -1,0 +1,18 @@
+{
+  "environment": "isolated-local-review",
+  "hosted": false,
+  "steps": [
+    "donor-basics",
+    "donor-manual-label-confirmation",
+    "donor-condition",
+    "donor-awaiting-admin",
+    "admin-approval",
+    "ngo-request-form",
+    "ngo-request-timeline",
+    "donor-scheduled-code-hidden",
+    "ngo-simulated-collection-completed",
+    "donor-notifications"
+  ],
+  "errors": [],
+  "status": "passed"
+}
