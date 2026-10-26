@@ -12,7 +12,7 @@ import org.springframework.core.env.Environment;
 public class ReviewModePolicy {
     public static final String DATABASE = "medbridgereview20261026";
     public static final String PURPOSE = "FICTIONAL_COLLEGE_REVIEW_ONLY";
-    public static final Instant HARD_STOP = ZonedDateTime.of(2026, 10, 27, 0, 0, 0, 0, ZoneId.of("Asia/Kolkata")).toInstant();
+    public static final Instant HARD_STOP = ZonedDateTime.of(2026, 11, 23, 0, 0, 0, 0, ZoneId.of("Asia/Kolkata")).toInstant();
     public static final String LOCAL_URL = "jdbc:mysql://127.0.0.1:13307/" + DATABASE + "?sslMode=DISABLED&allowPublicKeyRetrieval=true&serverTimezone=UTC";
     private final Environment env;
     private final Clock clock;
