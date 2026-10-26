@@ -24,3 +24,17 @@ it('uses the privately entered gate before explicit login and never autofills pu
  await waitFor(()=>expect(login).toHaveBeenCalledWith('donor@review.medbridge.invalid','fictional-test-password'));
  expect(setReviewAccessKey).toHaveBeenCalledWith(gate);
 });
+
+it('keeps the password accessible name stable when visibility changes without submitting',()=>{
+ const password=screen.getByLabelText('Password',{exact:true});
+ expect(password).toHaveAttribute('type','password');
+ const show=screen.getByRole('button',{name:'Show password'});
+ expect(show).toHaveAttribute('aria-pressed','false');
+ fireEvent.click(show);
+ expect(screen.getByLabelText('Password',{exact:true})).toBe(password);
+ expect(password).toHaveAttribute('type','text');
+ expect(screen.getByRole('button',{name:'Hide password'})).toHaveAttribute('aria-pressed','true');
+ fireEvent.click(screen.getByRole('button',{name:'Hide password'}));
+ expect(password).toHaveAttribute('type','password');
+ expect(login).not.toHaveBeenCalled();
+});
