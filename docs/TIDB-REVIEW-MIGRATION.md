@@ -29,7 +29,7 @@ These are documented capabilities, not successful TiDB-backed tests. Stop if the
 
 The JDBC URL must be exactly `jdbc:mysql://<pinned-host>:4000/medbridgereview20261026?sslMode=VERIFY_IDENTITY&serverTimezone=UTC`. The runtime connection name must be `<pinned-prefix>.mb_review_<suffix>`. Root/administrator names cannot pass. Startup also rejects administrative/role/global/table/column grants and requires all four database DML privileges.
 
-The review profile, purpose, private invitation, distinct private passwords/JWT, safe SQL/ORM modes, verified security marker and deadline remain required. `@medbridge.test` identities remain local-only. Public registration stays false. Readiness and requests fail at `2026-10-26T18:30:00Z` (October 27, 00:00 IST); do not extend the cutoff to resolve delays.
+The review profile, purpose, private invitation, distinct private passwords/JWT, safe SQL/ORM modes, verified security marker and deadline remain required. `@medbridge.test` identities remain local-only. Public registration stays false. Readiness and requests fail at `2026-11-22T18:30:00Z` (November 23, 00:00 IST); change the cutoff only through a reviewed commit with owner approval, never to resolve delays.
 
 ## Private configuration checklist
 
@@ -49,7 +49,7 @@ For a separately approved dedicated Render review service:
 | REVIEW_DB_PASSWORD | Private distinct random password, at least 24 characters |
 | REVIEW_TLS_TRUST | `system`; no conflicting `/etc/secrets/ca.pem` on the TiDB review service |
 | REVIEW_DB_INIT_SQL | Exactly `SET SESSION foreign_key_checks=ON, tidb_txn_mode='pessimistic'` |
-| REVIEW_EXPIRES_AT | No later than `2026-10-26T18:30:00Z` |
+| REVIEW_EXPIRES_AT | No later than `2026-11-22T18:30:00Z` |
 | REVIEW_FRONTEND_ORIGIN | Exact separately approved HTTPS review origin |
 | REVIEW_ACCESS_KEY / REVIEW_JWT_SECRET | Separate private random secrets, at least 48 characters |
 | REVIEW_DONOR_PASSWORD / REVIEW_NGO_PASSWORD / REVIEW_PENDING_PASSWORD / REVIEW_ADMIN_PASSWORD | Four distinct private random passwords, at least 24 characters |

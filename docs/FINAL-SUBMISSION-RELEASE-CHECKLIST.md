@@ -31,7 +31,7 @@ The PDFs are **concept previews**, not completed deployed screenshots. Actual UI
 | 1 | Donor login | Email/password login, safe error state and correct donor role |
 | 2 | Dashboard | Actual persisted donation statuses, not hard-coded PDF counts |
 | 3 | New donation basics | Name, form, quantity, batch, expiry; reject expiry within 3 months |
-| 4 | Strip-label photograph | Accept synthetic image, show preview and **manual** confirmation of name/batch/expiry; OCR is not implemented and must never be falsely claimed |
+| 4 | Strip-label photograph | Accept synthetic image, show preview; assisted in-browser OCR suggests name/batch/expiry and the donor explicitly confirms; OCR makes no safety claim |
 | 5 | Condition and submit | Sealed/storage declaration; real API creates a fictional listing awaiting admin review |
 | 6 | Admin review | Admin must approve/reject before publication; no automatic approval |
 | 7 | Approved/listed | Approved, eligible, unexpired records become visible only to verified nearby NGOs (10 km) |
@@ -51,7 +51,7 @@ The PDFs are **concept previews**, not completed deployed screenshots. Actual UI
 | 6 | Collection/handoff | NGO enters donor code; expired/wrong/too many attempts rejected; record simulated completion |
 | 7 | Notifications | Accepted request, relevant new listings, fictional collection outcome |
 
-**Source/reference discrepancy to communicate during viva:** the PDFs' proposed OCR and human medical-clearance language are concepts. Current code performs a **manual OCR fallback**, and fictional administrator review does **not** equal regulatory/clinical verification. Remove promises such as guaranteed review times unless actually implemented and supported.
+**Source/reference discrepancy to communicate during viva:** the PDFs' proposed OCR and human medical-clearance language are concepts. Current code performs **assisted in-browser OCR suggestion with explicit donor confirmation**, and fictional administrator review does **not** equal regulatory/clinical verification. Remove promises such as guaranteed review times unless actually implemented and supported.
 
 ## 3. Database and backend gates (actual hosted evidence required)
 
@@ -78,6 +78,6 @@ The PDFs are **concept previews**, not completed deployed screenshots. Actual UI
 
 - Do **not** change or delete Aiven, resume the old Phase 2 Render backend, alter billing, add cards, or switch to paid resources.
 - Do **not** publish private hosted-review credentials in GitHub. Intentionally public demo credentials in [DEMO-LOGIN.md](../DEMO-LOGIN.md) work **only** in exact isolated local mode.
-- This review build is hard-stopped at **2026-10-27 00:00 IST (2026-10-26T18:30:00Z)**. Extending that cutoff, opening registration or activating real donations requires a separate security/product release.
+- This review build is hard-stopped at **2026-11-23 00:00 IST (2026-11-22T18:30:00Z)** - access ends at the end of 22 November. Extending that cutoff, opening registration or activating real donations requires a separate security/product release.
 - A passing unit test or a Vercel `READY` build alone is **not** a completed website. Declare hosted success only after the full test journey and safety gates pass.
 - Do not promise zero bugs. Document remaining limitations honestly and prevent critical/security regressions with repeatable tests.
