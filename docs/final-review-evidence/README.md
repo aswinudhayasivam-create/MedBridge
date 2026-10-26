@@ -49,6 +49,6 @@ TiDB compatibility is historically verified, but a successful compatibility prob
 
 The protected Render service still requires the migration source branch, restricted TiDB credentials, exact HTTPS frontend origin, private review secrets, no conflicting environment groups/secret files, SQL initialization disabled and auto-deploy Off. Only the existing Free service is approved. A READY protected Vercel frontend alone does not establish hosted functionality. Keep PR #1 draft until hosted acceptance passes; no main merge or original production promotion is authorized.
 
-The hard stop remains **27 October 2026, 00:00 IST (`2026-10-26T18:30:00Z`)**. OCR is not implemented: manual label confirmation is explicit. Fictional admin review is not clinical approval. There are no real users, medical records, addresses or physical medicine transfers in this evidence.
+The hard stop is **23 November 2026, 00:00 IST (`2026-11-22T18:30:00Z`)** - access ends at the end of 22 November. Assisted in-browser OCR suggests label details; donor confirmation is explicit. Fictional admin review is not clinical approval. There are no real users, medical records, addresses or physical medicine transfers in this evidence.
 
 Non-blocking tooling messages: Vitest suggests reducing jsdom setup overhead; the Vite build emits performance timing diagnostics. Neither is a test or build failure. Full hosted concurrency, persistence, CORS, browser acceptance, TLS-negative tests and reviewer access are still required before claiming a completed hosted website.
