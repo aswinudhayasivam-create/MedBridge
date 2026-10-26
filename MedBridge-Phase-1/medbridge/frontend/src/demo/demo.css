@@ -7,3 +7,7 @@
 .demo-card-heading>.demo-pill{flex-shrink:0}.demo-grid.three>.demo-card>.demo-primary{display:flex;width:100%;margin-top:14px}.demo-date-entry>button{font-size:11px;margin-top:5px}.demo-mobile-more{display:none}@media(max-width:768px){.demo-mobile-more{display:flex;flex-direction:column;position:fixed;bottom:76px;left:12px;right:12px;max-height:70vh;overflow:auto;background:#0a3027;color:#e2f1e8;z-index:60;padding:14px;border-radius:12px;box-shadow:0 8px 35px #001e2260}.demo-mobile-more a{display:flex;gap:10px;align-items:center;min-height:44px;padding:9px}.demo-mobile-more button{margin-top:8px}}
 
 @media(max-width:768px){.demo-topbar{background:#0a3027;color:#fff}.demo-topbar .demo-mobile-brand{color:#fff}}
+
+/* Keep the compact review header usable by touch and keyboard. */
+.demo-topbar>a:last-child{min-width:44px;min-height:44px;justify-content:center}
+@media(max-width:768px){.demo-topbar>.demo-mobile-brand{display:flex;align-items:center;min-height:44px}}
