@@ -44,7 +44,7 @@ export function createReviewClient({ enabled, baseUrl, fetcher = globalThis.fetc
     const capability = await send('/api/auth/review-mode');
     if (capability?.environment !== 'isolated-review' || capability.reviewEnabled !== true || capability.registrationEnabled !== false || capability.syntheticOnly !== true
       || !Number.isFinite(Date.parse(capability.expiresAt)) || Date.parse(capability.expiresAt) <= now()
-      || Date.parse(capability.expiresAt) > Date.parse('2026-10-26T18:30:00Z')) throw new ApiError('Review access has expired or is unavailable.', 403);
+      || Date.parse(capability.expiresAt) > Date.parse('2026-11-22T18:30:00Z')) throw new ApiError('Review access has expired or is unavailable.', 403);
     return send(path, options);
   };
 }
