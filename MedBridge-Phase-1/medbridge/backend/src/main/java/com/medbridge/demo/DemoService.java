@@ -88,7 +88,7 @@ public class DemoService {
                 var image=reader.read(0);var bytes=new ByteArrayOutputStream();ImageIO.write(image,"png",bytes);
                 if(bytes.size()>2_000_000)throw bad("Decoded image is too large.");
                 db.update("INSERT INTO demo_photos(donor_id,image_bytes,mime) VALUES(?,?,'image/png')",uid(u),bytes.toByteArray());
-                return Map.of("photoId",db.queryForObject("SELECT LAST_INSERT_ID()",Long.class),"ocrPerformed",false,"message","OCR is unavailable. Manually confirm the synthetic label details.");
+                return Map.of("photoId",db.queryForObject("SELECT LAST_INSERT_ID()",Long.class),"ocrPerformed",false,"message","Label stored. The browser may suggest candidate details with assisted on-device OCR; confirm them manually before submitting.");
             }finally{reader.dispose();}
         }catch(IOException ex){throw bad("The synthetic image could not be read.");}
     }
