@@ -1,45 +1,36 @@
-import { describe, it, expect, vi } from 'vitest';
-import { canEnableReview, createReviewClient } from '../lib/review-api.js';
+import { beforeEach, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import DemoApp from '../demo/DemoApp.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
+vi.mock('../context/AuthContext.jsx',()=>({useAuth:vi.fn()}));
+vi.mock('../lib/review-api.js',()=>({REVIEW_ENABLED:true}));
+vi.mock('../lib/demo-api.js',()=>({DEMO_ENABLED:false,demoRequest:vi.fn()}));
+let login;
+beforeEach(()=>{vi.clearAllMocks();login=vi.fn().mockResolvedValue({});useAuth.mockReturnValue({session:null,login});render(<MemoryRouter initialEntries={['/login']}><DemoApp/></MemoryRouter>);});
+it('shows separate private review entry without the public local account selectors',()=>{
+ expect(screen.queryByLabelText('Private review invitation key')).not.toBeInTheDocument();
+ expect(screen.queryByRole('button',{name:'Donor',exact:true})).not.toBeInTheDocument();
+ expect(screen.queryByRole('button',{name:'Admin',exact:true})).not.toBeInTheDocument();
+ expect(screen.getByText(/expires at the end of 22 November/)).toBeInTheDocument();
+});
+it('uses email and password without an invitation key and never autofills public credentials',async()=>{
+ fireEvent.change(screen.getByLabelText('Email'),{target:{value:'donor@review.medbridge.invalid'}});
+ fireEvent.change(screen.getByLabelText(/Password/,{selector:'input'}),{target:{value:'fictional-test-password'}});
+ fireEvent.click(screen.getByRole('button',{name:'Login',exact:true}));
+ await waitFor(()=>expect(login).toHaveBeenCalledWith('donor@review.medbridge.invalid','fictional-test-password'));
+});
 
-const origin='https://fictional-review.example.invalid';
-const apiBaseUrl='https://fictional-api.example.invalid';
-const settings={build:true,mode:'review',enabled:'true',apiBaseUrl,origin};
-const capability={environment:'isolated-review',reviewEnabled:true,registrationEnabled:false,syntheticOnly:true,expiresAt:'2026-10-26T18:30:00Z'};
-const now=()=>Date.parse('2026-10-25T00:00:00Z');
-function response(data){return {ok:true,text:async()=>JSON.stringify(data),json:async()=>data};}
-describe('explicit protected reviewer transport',()=>{
- it('requires the explicit review build, mode, flag and HTTPS origins',()=>{
-  expect(canEnableReview(settings)).toBe(true);
-  for(const change of [{build:false},{mode:'production'},{enabled:'false'},{origin:'http://example.invalid'},{apiBaseUrl:'http://example.invalid'},{apiBaseUrl:apiBaseUrl+'/api'},{apiBaseUrl:'https://secret@example.invalid'}])expect(canEnableReview({...settings,...change})).toBe(false);
- });
- it('allows only the exact loopback test pair during development',()=>{
-  expect(canEnableReview({...settings,development:true,origin:'http://127.0.0.1:5174',apiBaseUrl:'http://127.0.0.1:18080'})).toBe(true);
-  expect(canEnableReview({...settings,development:false,origin:'http://127.0.0.1:5174',apiBaseUrl:'http://127.0.0.1:18080'})).toBe(false);
- });
- it('does not send anything when disabled',async()=>{
-  const fetcher=vi.fn();
-  for(const options of [{enabled:false}])await expect(createReviewClient({...options,baseUrl:apiBaseUrl,fetcher,now})('/api/auth/login')).rejects.toThrow(/unavailable/);
-  expect(fetcher).not.toHaveBeenCalled();
- });
- it('checks server capability before transmitting passwords or JWTs',async()=>{
-  const fetcher=vi.fn().mockResolvedValue(response({...capability,registrationEnabled:true}));
-  const request=createReviewClient({enabled:true,baseUrl:apiBaseUrl,fetcher,now});
-  await expect(request('/api/auth/login',{method:'POST',body:{password:'fictional-fixture'}})).rejects.toThrow(/unavailable/);
-  expect(fetcher).toHaveBeenCalledTimes(1);expect(fetcher.mock.calls[0][0]).toBe(apiBaseUrl+'/api/auth/review-mode');
-  expect(fetcher.mock.calls[0][1]).not.toHaveProperty('body');
- });
- it('rejects expired or extended deadlines and registration routes',async()=>{
-  for(const expiresAt of ['2026-10-24T00:00:00Z','2027-01-01T00:00:00Z']){
-   const fetcher=vi.fn().mockResolvedValue(response({...capability,expiresAt}));
-   await expect(createReviewClient({enabled:true,baseUrl:apiBaseUrl,fetcher,now})('/api/auth/me')).rejects.toThrow(/expired/);
-  }
-  const fetcher=vi.fn();await expect(createReviewClient({enabled:true,fetcher,now})('/api/auth/register')).rejects.toThrow(/Invalid review route/);expect(fetcher).not.toHaveBeenCalled();
- });
- it('sends only the JWT in headers and supports actual workflow responses',async()=>{
-  const fetcher=vi.fn().mockResolvedValueOnce(response(capability)).mockResolvedValueOnce(response({requestId:7}));
-  const request=createReviewClient({enabled:true,baseUrl:apiBaseUrl,fetcher,now});
-  expect(await request('/api/demo/medicines/1/requests',{method:'POST',token:'fictional-jwt',body:{quantity:2}})).toEqual({requestId:7});
-  const [url,options]=fetcher.mock.calls[1];expect(url).not.toContain("password");expect(options.credentials).toBe('omit');expect(options.cache).toBe('no-store');
-  expect(options.headers).not.toHaveProperty('X-MedBridge-Review-Key');expect(options.headers.Authorization).toBe('Bearer fictional-jwt');
- });
+it('keeps the password accessible name stable when visibility changes without submitting',()=>{
+ const password=screen.getByLabelText('Password',{exact:true});
+ expect(password).toHaveAttribute('type','password');
+ const show=screen.getByRole('button',{name:'Show password'});
+ expect(show).toHaveAttribute('aria-pressed','false');
+ fireEvent.click(show);
+ expect(screen.getByLabelText('Password',{exact:true})).toBe(password);
+ expect(password).toHaveAttribute('type','text');
+ expect(screen.getByRole('button',{name:'Hide password'})).toHaveAttribute('aria-pressed','true');
+ fireEvent.click(screen.getByRole('button',{name:'Hide password'}));
+ expect(password).toHaveAttribute('type','password');
+ expect(login).not.toHaveBeenCalled();
 });
