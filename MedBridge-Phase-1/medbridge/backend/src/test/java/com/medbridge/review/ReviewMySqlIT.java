@@ -158,8 +158,8 @@ class ReviewMySqlIT {
         }
     }
 
-    @Test void reviewGateRegistrationAndOriginalLocalIdentitiesFailClosed()throws Exception{
-        assertEquals(401,http.getForEntity("http://127.0.0.1:"+port+"/api/auth/review-mode",String.class).getStatusCode().value());
+    @Test void passwordOnlyRegistrationAndOriginalLocalIdentitiesFailClosed()throws Exception{
+        assertEquals(200,http.getForEntity("http://127.0.0.1:"+port+"/api/auth/review-mode",String.class).getStatusCode().value());
         for(String email:List.of("meera@medbridge.test","divya@medbridge.test","pending@medbridge.test","admin@medbridge.test"))
             assertEquals(401,call(HttpMethod.POST,"/api/auth/login",Map.of("email",email,"password",secret()),null).getStatusCode().value());
         assertEquals(503,call(HttpMethod.POST,"/api/auth/register",Map.of(),null).getStatusCode().value());
