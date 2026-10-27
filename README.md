@@ -52,11 +52,81 @@ A donor submits a synthetic listing; an administrator screens it; verified ficti
 | Area | Implemented behavior |
 | --- | --- |
 | Donor | Database-derived dashboard, four-step submission, synthetic image validation, declarations, history and requests |
+
+> Hosted review update (27 October 2026): email/password-only login is deployed. The shared invitation-key requirement is removed. JWT, roles, ownership, isolated database/TLS, disabled registration, rate limits and the end-of-22-November-2026 Asia/Kolkata cutoff remain. Public local demo passwords still do not work online. Only newly rotated, disposable public demo passwords below are intentionally published.
+
+> **Source status (October 26, 2026):** This README is published on both `main` and the development branch. The **complete React/Spring Boot application** and TiDB review preparation currently live on **[`feature/tidb-hosted-review`](https://github.com/aswinudhayasivam-create/MedBridge/tree/feature/tidb-hosted-review)**; the default `main` application source is still an older Phase 1 snapshot until the draft release pull request passes hosted acceptance. Use the feature branch for local testing. Do not merge or deploy an unverified full-stack release.
+
+## Website and source code
+
+**[Open the MedBridge hosted review demo](https://medbridge-review-20261026-git-fe-dcd96f-aswinudhayasivam-create.vercel.app/)** · **[GitHub repository](https://github.com/aswinudhayasivam-create/MedBridge)** · [Local demo setup](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-SETUP.md) · [Project status](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/PROJECT-STATUS.md) · [Final QA / PDF fidelity checklist](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/docs/FINAL-SUBMISSION-RELEASE-CHECKLIST.md)
+
+> **Deployment note (October 27, 2026):** The website link opens the temporary hosted review demo (Vercel frontend, Render backend, TiDB database). It is a fictional demonstration that stays online until **22 November 2026 (Asia/Kolkata)**. The login page is public, but sign-in needs separate public fictional-demo role accounts listed below, and registration is disabled. The free Render backend sleeps when idle, so the first login can take about a minute. The public local demo passwords below **do not work in hosted review mode**. The older `med-bridge-ruddy.vercel.app` page is only a Phase 1 placeholder. Never treat this prototype as a real medicine distribution service.
+
+## Hosted fictional demo logins - online only
+
+[Open the hosted demo](https://medbridge-review-20261026-git-fe-dcd96f-aswinudhayasivam-create.vercel.app/)
+
+These are intentionally public, disposable credentials for synthetic records only. Anyone can sign in, including as administrator and change fictional records. Never enter real medicine, patient or address information. No invitation key is needed. The previous private role passwords no longer work. Registration stays disabled. Access ends at the end of 22 November 2026 (Asia/Kolkata). Free Render hosting can need about a minute to wake up.
+
+| Demo role | Online email | Public demo-only password |
+|---|---|---|
+| Donor | `donor@review.medbridge.invalid` | `Demo-Donor-C599xKcifZvE58lDbe4G!` |
+| Verified NGO | `ngo@review.medbridge.invalid` | `Demo-Ngo-HTfbLrf5x8bn5iDPnfef!` |
+| Pending NGO | `pending@review.medbridge.invalid` | `Demo-Pending-_Q8cSbJzugmzbbMlqPG-!` |
+| Administrator | `admin@review.medbridge.invalid` | `Demo-Admin-NsMb4uZCxhZlLAdUwZPu!` |
+
+Pending NGO can log in but cannot browse/request medicines until verified. Do not reuse these public passwords on any real account. JWT, role/ownership checks, rate limits, isolated database/TLS and server cutoff remain enforced.
+
+## Demo login details — local development only
+
+These are deliberately public **fictional local-only** credentials for the tested local MySQL demo. They are rejected by protected hosted-review mode; the online credentials are separate disposable public demo values listed above.
+
+| Demo role | Email | Password |
+| --- | --- | --- |
+| **Donor (Meera)** | `meera@medbridge.test` | `DemoDonor2026!` |
+| **Verified NGO (Divya)** | `divya@medbridge.test` | `DemoNgo2026!` |
+| Pending NGO (HopeCare) | `pending@medbridge.test` | `DemoPending2026!` |
+| Administrator | `admin@medbridge.test` | `DemoAdmin2026!` |
+
+**To sign in locally:** follow [DEMO-SETUP.md](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-SETUP.md), start the database, Spring Boot and Vite frontend using `scripts/phase5-demo.ps1`, then visit `http://127.0.0.1:5173/login`. These accounts are **not** public online accounts. See [DEMO-LOGIN.md](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-LOGIN.md) for local isolation and safeguards.
+
+## Hosted database status
+
+The hosted review runs on a $0 TiDB Cloud Starter database with a restricted runtime user. The donor, admin and NGO journey was run end to end on the hosted review demo on 26 October 2026, and the donor login was re-checked on 27 October 2026. Public registration remains disabled, and protected review access ends on **22 November 2026 (Asia/Kolkata)**.
+
+See [TiDB migration checklist](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/docs/TIDB-REVIEW-MIGRATION.md), [deployment guide](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEPLOYMENT-GUIDE.md), and [project status](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/PROJECT-STATUS.md). Aiven files remain as legacy references and must not be used to initialize TiDB.
+
+**A donation-only full-stack application connecting donors with verified fictional NGO/clinic receivers.**
+
+React / Vite · Java 17 / Spring Boot 3 · Spring Security / JWT / BCrypt · MySQL 8 (local) / TiDB Starter (hosted target)
+
+> **Evaluation status:** the complete local workflow is verified, and a protected, fictional hosted review demo is online until 22 November 2026 (Asia/Kolkata): see the link above. Registration, payments and physical medicine transfers are disabled.
+
+[Commit manifest](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/COMMIT-MANIFEST.md) · [Demo logins](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-LOGIN.md) · [Setup](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-SETUP.md) · [Viva walkthrough](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-WALKTHROUGH.md) · [Project status](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/PROJECT-STATUS.md) · [Deployment guide](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEPLOYMENT-GUIDE.md)
+
+## 1. Project overview
+
+The implemented receiver account role is NGO. MedBridge implements controlled listing, screening, geographic discovery, requests, donor decisions and code-confirmed **simulated** handover. Every meaningful action calls Spring Boot and persists in MySQL. It is an engineering demonstration, not an operational medicine distribution service or medical clearance system.
+
+## 2. Problem statement
+
+Uncoordinated surplus-medicine offers lack reliable ownership, condition declarations, expiry checks, receiver verification and traceable decisions. A useful system needs a controlled workflow rather than an unreviewed public catalogue.
+
+## 3. Proposed solution
+
+A donor submits a synthetic listing; an administrator screens it; verified fictional NGOs discover eligible nearby records and request a quantity. The donor accepts or declines, schedules an illustrative collection and shares a private four-digit code. Correct confirmation records a simulated collection and receipt, with notifications and an audit trail.
+
+## 4. Major features
+
+| Area | Implemented behavior |
+| --- | --- |
+| Donor | Database-derived dashboard, four-step submission, synthetic image validation, declarations, history and requests |
 | NGO | Pending/verified permissions, Haversine discovery within 10 km, distance/category/expiry filters, quantity/note requests |
 | Administrator | Restricted login, NGO approval/rejection, medicine screening, account overview, request monitoring and audit events |
 | Handover | Transactional reservations, simulated scheduling, donor-only four-digit code, expiry and five-attempt lockout |
 | Persistence | MySQL records, notifications/read state and completion survive backend restart |
-| Review preparation | Separate identities/database, private invitation gate, server cutoff, rate limits and readiness checks |
+| Review preparation | Separate identities/database, password-only login, server cutoff, rate limits and readiness checks |
 
 ## 5. Technology stack
 
@@ -74,7 +144,7 @@ A donor submits a synthetic listing; an administrator screens it; verified ficti
 ```mermaid
 flowchart LR
     B[React browser UI] -->|JSON / multipart + JWT| A[Spring Boot API]
-    A --> G[Environment / invitation / expiry guards]
+    A --> G[Environment / password / expiry guards]
     G --> R[Role + verification + ownership checks]
     R --> S[Shared workflow service]
     S --> D[(Local MySQL / hosted TiDB)]
@@ -87,7 +157,7 @@ flowchart LR
 
 1. Authenticate as a fictional donor.
 2. Enter medicine/form/category, quantity/unit, batch and expiry at least three months away.
-3. Upload the bundled synthetic label and explicitly confirm its details. OCR is **not** performed.
+3. Upload the bundled synthetic label. Assisted on-device OCR may suggest its details in the browser; the donor explicitly confirms them.
 4. Declare sealed condition and fictional storage, review and submit.
 5. Follow administrator review and incoming verified-NGO requests.
 6. Accept/decline, schedule a simulated collection and retrieve the donor-only code.
@@ -119,13 +189,13 @@ Actual application captures from the completed local walkthrough; illustrated co
 
 ## 11. Demo credentials
 
-The **Donor**, **Verified NGO**, **Pending NGO**, and **Administrator** local demo emails and passwords are listed near the top under [Demo login details](#demo-login-details--local-development-only). See [DEMO-LOGIN.md](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-LOGIN.md) for the exact local-only identity restrictions. Hosted review accounts and their invitation key are private; no usable hosted credentials are published.
+The **Donor**, **Verified NGO**, **Pending NGO**, and **Administrator** local demo emails and passwords are listed near the top under [Demo login details](#demo-login-details--local-development-only). See [DEMO-LOGIN.md](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-LOGIN.md) for the exact local-only identity restrictions. Hosted review uses the separate disposable public credentials listed above.
 
 ## 12. Online demo
 
 **Pending deployment and exposure approval. No verified hosted review URL is available.**
 
-The intended evaluation runs independently of a home computer: protected Vercel frontend → dedicated Render review API → isolated persistent MySQL. It uses the same functional screens and service logic. Server configuration, a dedicated database marker/restricted user, invitation key, JWT authorization and expiration must all pass. See [DEPLOYMENT-GUIDE.md](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEPLOYMENT-GUIDE.md) for approvals and exact settings. The old Phase 2 backend is not a review target.
+The intended evaluation runs independently of a home computer: protected Vercel frontend → dedicated Render review API → isolated persistent MySQL. It uses the same functional screens and service logic. Server configuration, a dedicated database marker/restricted user, email/password login, JWT authorization and expiration must all pass. See [DEPLOYMENT-GUIDE.md](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEPLOYMENT-GUIDE.md) for approvals and exact settings. The old Phase 2 backend is not a review target.
 
 ## 13. Local setup
 
@@ -173,7 +243,7 @@ Dedicated review adds `review_environment` as an isolation/schema/expiry marker.
 
 - Public registration disabled by default; no public administrator signup.
 - Exact local-auth guard and local-only `@medbridge.test` identity policy preserved.
-- Review profile defaults disabled, rejects ordinary/local identities and requires a proven dedicated database and private gate.
+- Review profile defaults disabled, rejects ordinary/local identities and requires a proven dedicated database and private role login.
 - Server-enforced review deadline: **end of 22 November 2026, Asia/Kolkata** (extended from the original 27 October deadline). Existing JWTs do not bypass expiry.
 - BCrypt hashes, in-memory browser JWTs, ownership/role/verification checks and bounded handoff attempts.
 - Hosted review database requires hostname-verifying TLS and restricted DML permissions; no startup schema reset.
@@ -197,11 +267,11 @@ Latest local verification: [PROJECT-STATUS.md](https://github.com/aswinudhayasiv
 
 ## 18. Project limitations
 
-OCR is an honest manual fallback. NGO verification and medicine screening are fictional, not medical/regulatory approval. Collection and receipt are one simulated transition. The same NGO cannot re-request a listing after a terminal decision because the original uniqueness constraint is retained. Review quotas are process-local and may be shared behind a proxy; free hosting has cold starts. Hosted connectivity, TLS CA, database recovery and reviewer exposure remain unverified pending approval.
+Assisted in-browser OCR only suggests label text; the donor always confirms it. NGO verification and medicine screening are fictional, not medical/regulatory approval. Collection and receipt are one simulated transition. The same NGO cannot re-request a listing after a terminal decision because the original uniqueness constraint is retained. Review quotas are process-local and may be shared behind a proxy; free hosting has cold starts. Hosted connectivity, TLS CA, database recovery and reviewer exposure remain unverified pending approval.
 
 ## 19. Future enhancements
 
-Formal medicine/legal review, real NGO identity validation, revocable sessions, audited migrations/backups, stronger distributed abuse controls, independent received status, accessible user testing and calibrated OCR assistance. Public accounts and physical transfers require a separate approved release; the review deadline must not be extended as a shortcut.
+Formal medicine/legal review, real NGO identity validation, revocable sessions, audited migrations/backups, stronger distributed abuse controls, independent received status and accessible user testing. Public accounts and physical transfers require a separate approved release; the review deadline must not be extended as a shortcut.
 
 ## 20. Contributors and project status
 
