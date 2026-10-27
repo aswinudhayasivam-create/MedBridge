@@ -1,16 +1,18 @@
 # MedBridge — Smart Medicine Redistribution Network
 
+> Hosted review update (27 October 2026): email/password-only login is deployed. The shared invitation-key requirement is removed. JWT, roles, ownership, isolated database/TLS, disabled registration, rate limits and the end-of-22-November-2026 Asia/Kolkata cutoff remain. Public local demo passwords still do not work online. Working review passwords are never published.
+
 > **Source status (October 26, 2026):** This README is published on both `main` and the development branch. The **complete React/Spring Boot application** and TiDB review preparation currently live on **[`feature/tidb-hosted-review`](https://github.com/aswinudhayasivam-create/MedBridge/tree/feature/tidb-hosted-review)**; the default `main` application source is still an older Phase 1 snapshot until the draft release pull request passes hosted acceptance. Use the feature branch for local testing. Do not merge or deploy an unverified full-stack release.
 
 ## Website and source code
 
 **[Open the MedBridge hosted review demo](https://medbridge-review-20261026-git-re-83d207-aswinudhayasivam-create.vercel.app/)** · **[GitHub repository](https://github.com/aswinudhayasivam-create/MedBridge)** · [Local demo setup](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-SETUP.md) · [Project status](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/PROJECT-STATUS.md) · [Final QA / PDF fidelity checklist](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/docs/FINAL-SUBMISSION-RELEASE-CHECKLIST.md)
 
-> **Deployment note (October 27, 2026):** The website link opens the temporary hosted review demo (Vercel frontend, Render backend, TiDB database). It is a fictional demonstration that stays online until **22 November 2026 (Asia/Kolkata)**. The login page is public, but sign-in needs a private invitation key and role accounts that are not published here, and registration is disabled. The free Render backend sleeps when idle, so the first login can take about a minute. The public local demo passwords below **do not work in hosted review mode**. The older `med-bridge-ruddy.vercel.app` page is only a Phase 1 placeholder. Never treat this prototype as a real medicine distribution service.
+> **Deployment note (October 27, 2026):** The website link opens the temporary hosted review demo (Vercel frontend, Render backend, TiDB database). It is a fictional demonstration that stays online until **22 November 2026 (Asia/Kolkata)**. The login page is public, but sign-in needs a private role email/password accounts that are not published here, and registration is disabled. The free Render backend sleeps when idle, so the first login can take about a minute. The public local demo passwords below **do not work in hosted review mode**. The older `med-bridge-ruddy.vercel.app` page is only a Phase 1 placeholder. Never treat this prototype as a real medicine distribution service.
 
 ## Demo login details — local development only
 
-These are deliberately public **fictional local-only** credentials for the tested local MySQL demo. They are rejected by protected hosted-review mode; hosted reviewer passwords and the invitation key are private and must **never** be added to GitHub.
+These are deliberately public **fictional local-only** credentials for the tested local MySQL demo. They are rejected by protected hosted-review mode; hosted reviewer passwords are private and must **never** be added to GitHub.
 
 | Demo role | Email | Password |
 | --- | --- | --- |
@@ -56,7 +58,7 @@ A donor submits a synthetic listing; an administrator screens it; verified ficti
 | Administrator | Restricted login, NGO approval/rejection, medicine screening, account overview, request monitoring and audit events |
 | Handover | Transactional reservations, simulated scheduling, donor-only four-digit code, expiry and five-attempt lockout |
 | Persistence | MySQL records, notifications/read state and completion survive backend restart |
-| Review preparation | Separate identities/database, private invitation gate, server cutoff, rate limits and readiness checks |
+| Review preparation | Separate identities/database, password-only login, server cutoff, rate limits and readiness checks |
 
 ## 5. Technology stack
 
@@ -74,7 +76,7 @@ A donor submits a synthetic listing; an administrator screens it; verified ficti
 ```mermaid
 flowchart LR
     B[React browser UI] -->|JSON / multipart + JWT| A[Spring Boot API]
-    A --> G[Environment / invitation / expiry guards]
+    A --> G[Environment / password / expiry guards]
     G --> R[Role + verification + ownership checks]
     R --> S[Shared workflow service]
     S --> D[(Local MySQL / hosted TiDB)]
@@ -119,13 +121,13 @@ Actual application captures from the completed local walkthrough; illustrated co
 
 ## 11. Demo credentials
 
-The **Donor**, **Verified NGO**, **Pending NGO**, and **Administrator** local demo emails and passwords are listed near the top under [Demo login details](#demo-login-details--local-development-only). See [DEMO-LOGIN.md](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-LOGIN.md) for the exact local-only identity restrictions. Hosted review accounts and their invitation key are private; no usable hosted credentials are published.
+The **Donor**, **Verified NGO**, **Pending NGO**, and **Administrator** local demo emails and passwords are listed near the top under [Demo login details](#demo-login-details--local-development-only). See [DEMO-LOGIN.md](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-LOGIN.md) for the exact local-only identity restrictions. Hosted review account passwords are private; no usable hosted credentials are published.
 
 ## 12. Online demo
 
 **Pending deployment and exposure approval. No verified hosted review URL is available.**
 
-The intended evaluation runs independently of a home computer: protected Vercel frontend → dedicated Render review API → isolated persistent MySQL. It uses the same functional screens and service logic. Server configuration, a dedicated database marker/restricted user, invitation key, JWT authorization and expiration must all pass. See [DEPLOYMENT-GUIDE.md](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEPLOYMENT-GUIDE.md) for approvals and exact settings. The old Phase 2 backend is not a review target.
+The intended evaluation runs independently of a home computer: protected Vercel frontend → dedicated Render review API → isolated persistent MySQL. It uses the same functional screens and service logic. Server configuration, a dedicated database marker/restricted user, email/password login, JWT authorization and expiration must all pass. See [DEPLOYMENT-GUIDE.md](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEPLOYMENT-GUIDE.md) for approvals and exact settings. The old Phase 2 backend is not a review target.
 
 ## 13. Local setup
 
