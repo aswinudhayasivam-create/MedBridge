@@ -1,68 +1,128 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { apiRequest } from '../lib/api.js';
-import { DEMO_ENABLED } from '../lib/demo-api.js';
+import { useEffect, useState } from 'react';
+import { Link, NavLink, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Bell, Check, CircleHelp, ClipboardList, HeartHandshake, Home, Leaf, LogOut, Plus, Search, ShieldCheck, Truck, Users } from 'lucide-react';
+import { useAuth } from '../context/AuthContext.jsx';
+import { demoRequest } from '../lib/demo-api.js';
+import { demoAccounts } from '../lib/demo-accounts.js';
+import './demo.css';
+import DateEntry from './DateEntry.jsx';
 import { REVIEW_ENABLED } from '../lib/review-api.js';
+import { recognizeLabel, extractCandidates } from '../lib/ocr.js';
 
-const AuthContext = createContext(null);
+const status = value => ({ LISTED: 'Submitted for review', APPROVED: 'Approved', PENDING: 'Donor review', DECLINED: 'Declined', COLLECTED: 'Simulated collection completed', REJECTED: 'Rejected' }[value] || value);
+const date = value => value ? new Date(value).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : 'Not yet';
+const day = value => value ? String(value).slice(0, 10) : 'Not yet';
+function Badge({ children }) { return <span className="demo-pill">{children}</span>; }
+function Empty({ children = 'No records yet. Your next action will appear here.' }) { return <div className="demo-empty"><Leaf size={28}/><p>{children}</p></div>; }
+function Field({ label, children }) { return <label className="demo-field"><span>{label}</span>{children}</label>; }
+function Timeline({ items }) { return <ol className="demo-timeline">{items.map(([label, time, eventKey], index) => <li key={eventKey ?? index} className={time ? 'done' : ''}><span>{time ? <Check size={13}/> : '○'}</span><div><strong>{label}</strong><small>{time ? date(time) : 'Not yet'}</small></div></li>)}</ol>; }
 
-export function AuthProvider({ children }) {
-  // Keep JWT in memory only. Refreshing the page ends the session intentionally.
-  const [session, setSession] = useState(null);
+function Photo({ id }) {
+  const { session } = useAuth(); const [url, setUrl] = useState('');
+  useEffect(() => { let active = true, objectUrl;
+    if (id) demoRequest(`/api/demo/photos/${id}`, session.token, { binary: true }).then(blob => {
+      objectUrl = URL.createObjectURL(blob); if (active) setUrl(objectUrl); else URL.revokeObjectURL(objectUrl);
+    }).catch(() => {});
+    return () => { active = false; if (objectUrl) URL.revokeObjectURL(objectUrl); };
+  }, [id, session.token]);
+  return url ? <img className="demo-label-photo" src={url} alt="Uploaded synthetic medicine label; details confirmed by the donor"/> : <span className="demo-muted">Synthetic label preview unavailable</span>;
+}
 
-  useEffect(() => {
-    if (!session) return;
-    const timer = setTimeout(() => setSession(null), Math.max(0, session.expiresAt - Date.now()));
-    return () => clearTimeout(timer);
-  }, [session]);
-
-  function checkUser(user) {
-    if (!user || !['DONOR', 'NGO', ...((DEMO_ENABLED || REVIEW_ENABLED) ? ['ADMIN'] : [])].includes(user.role)) {
-      throw Object.assign(new Error('This account cannot use the donor or NGO portal.'), { status: 401 });
-    }
-    return user;
+function Login() {
+  const { login } = useAuth(); const navigate = useNavigate();
+  const [email, setEmail] = useState(''); const [password, setPassword] = useState('');
+  const [show, setShow] = useState(false); const [busy, setBusy] = useState(false); const [error, setError] = useState('');
+  async function submit(event) { event.preventDefault(); setBusy(true); setError('');
+    try { await login(email, password); setPassword(''); navigate('/dashboard'); }
+    catch (err) { setError(err.message); } finally { setBusy(false); }
   }
+  return <main className="demo-login"><aside><div className="demo-logo"><HeartHandshake/> MedBridge</div><small>Medicine donation, bridged</small><h1>Give the medicines you<br/>no longer need a second life.</h1><p>A fictional demonstration of a safer bridge between generosity and care.</p><ul><li>Every submission reviewed by a demo administrator</li><li>Only verified fictional NGOs can request</li><li>Code-confirmed simulated collections</li></ul><p className="demo-disclaimer">Fictional demonstration only. No real medicines, addresses or medical information.</p></aside><section className="demo-login-content"><form onSubmit={submit} autoComplete="off" className="demo-card"><Badge>{REVIEW_ENABLED ? '● PROTECTED FICTIONAL REVIEW' : '● DEMO · LOCAL ONLY'}</Badge><h2>Welcome back</h2><p>Log in to continue to your demo dashboard.</p>{!REVIEW_ENABLED && <fieldset className="demo-account-picker"><legend>Choose a fictional demo account</legend>{demoAccounts.map(account => <button type="button" key={account.label} onClick={() => { setEmail(account.email); setPassword(account.password); setError(''); }}>{account.label}</button>)}</fieldset>}{REVIEW_ENABLED && <><p>Private reviewer access expires at the end of 22 November 2026 (Asia/Kolkata). Sign in with your private role email and password.</p></>}<Field label="Email"><input type="email" required autoComplete="off" value={email} onChange={e => setEmail(e.target.value)}/></Field><Field label="Password"><div className="demo-password"><input aria-label="Password" type={show ? 'text' : 'password'} required autoComplete="off" value={password} onChange={e => setPassword(e.target.value)}/><button type="button" aria-label={show ? 'Hide password' : 'Show password'} aria-pressed={show} onClick={() => setShow(!show)}>{show ? 'Hide' : 'Show'}</button></div></Field>{error && <p role="alert" className="demo-error">{error}</p>}<button className="demo-primary" disabled={busy}>{busy ? 'Signing in…' : 'Login'}</button><p className="demo-muted">{REVIEW_ENABLED ? 'Real isolated review API and MySQL. Registration is disabled.' : 'Real local MySQL authentication. Public registration stays disabled.'}</p></form></section></main>;
+}
 
-  async function establishSession(data) {
-    if (typeof data.token !== 'string' || !data.token || !Number.isFinite(data.expiresInSeconds)
-        || data.expiresInSeconds <= 0 || data.expiresInSeconds > 86400) {
-      throw new Error('Unexpected authentication response.');
-    }
-    const user = checkUser(await apiRequest('/api/auth/me', { token: data.token }));
-    setSession({ token: data.token, user, expiresAt: Date.now() + data.expiresInSeconds * 1000 });
-    return user;
-  }
-
-  async function login(email, password) {
-    setSession(null);
-    const data = await apiRequest('/api/auth/login', { method: 'POST', body: { email, password } });
-    return establishSession(data);
-  }
-
-  async function register(body) {
-    setSession(null);
-    const data = await apiRequest('/api/auth/register', { method: 'POST', body });
-    try { return await establishSession(data); }
-    catch { throw new Error('The local test account was created, but sign-in could not be confirmed. Please log in.'); }
-  }
-
-  async function refreshProfile() {
-    if (!session?.token) return null;
+function DonationForm({ run }) {
+  const navigate = useNavigate(); const [step, setStep] = useState(0); const [photo, setPhoto] = useState(null); const [uploading, setUploading] = useState(false);
+  const [ocr, setOcr] = useState({ state: 'idle', progress: 0 });
+  const [form, setForm] = useState({ name: '', form: 'Tablets', category: 'General', quantity: 1, unit: 'strips', expiry: '', batch: '', storage: '', sealed: false, declared: false, photoConfirmed: false });
+  const change = key => e => setForm(s => ({ ...s, [key]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
+  async function upload(event) { const file = event.target.files?.[0]; if (!file) return; setUploading(true); setOcr({ state: 'idle', progress: 0 }); const data = new FormData(); data.append('file', file);
     try {
-      const user = checkUser(await apiRequest('/api/auth/me', { token: session.token }));
-      setSession(current => current?.token === session.token ? { ...current, user } : current);
-      return user;
-    } catch (error) {
-      if (error.status === 401) setSession(current => current?.token === session.token ? null : current);
-      throw error;
-    }
+      const result = await run('/photos', { method: 'POST', body: data });
+      if (!result) return;
+      setPhoto(result); setForm(s => ({ ...s, photoConfirmed: false }));
+      setOcr({ state: 'running', progress: 0 });
+      try {
+        const text = await recognizeLabel(file, progress => setOcr({ state: 'running', progress }));
+        const found = extractCandidates(text);
+        if (found.name || found.batch || found.expiry) {
+          setForm(s => ({ ...s, name: found.name || s.name, batch: found.batch || s.batch, expiry: found.expiry || s.expiry, photoConfirmed: false }));
+          setOcr({ state: 'suggested', progress: 1 });
+        } else setOcr({ state: 'empty', progress: 1 });
+      } catch { setOcr({ state: 'failed', progress: 0 }); }
+    } finally { setUploading(false); }
   }
-
-  const value = useMemo(() => ({ session, login, register, logout: () => { setSession(null); }, refreshProfile }), [session]);
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  async function advance(event) { event.preventDefault(); if (step < 3) { setStep(step + 1); return; }
+    const result = await run('/medicines', { method: 'POST', body: { ...form, quantity: Number(form.quantity), photoId: photo?.photoId } }); if (result) navigate('/donations');
+  }
+  return <><h1>New donation</h1><p className="demo-muted">Step {step + 1} of 4 · Fictional records only</p><div className="demo-steps">{['Basics', 'Label photo', 'Condition', 'Review & submit'].map((label, i) => <span key={label} className={i <= step ? 'active' : ''}>{i + 1} <b>{label}</b></span>)}</div><form className="demo-card demo-form" onSubmit={advance}>
+    {step === 0 && <><Field label="Medicine name"><input required maxLength={200} value={form.name} onChange={change('name')}/></Field><div className="demo-grid two"><Field label="Form"><select value={form.form} onChange={change('form')}>{['Tablets', 'Capsules', 'Sachets', 'Other'].map(v => <option key={v}>{v}</option>)}</select></Field><Field label="Category"><select value={form.category} onChange={change('category')}>{['General', 'Vitamin', 'Allergy', 'Rehydration'].map(v => <option key={v}>{v}</option>)}</select></Field><Field label="Quantity"><input required type="number" min="1" max="100000" value={form.quantity} onChange={change('quantity')}/></Field><Field label="Unit"><select value={form.unit} onChange={change('unit')}>{['strips', 'tablets', 'capsules', 'sachets', 'packs'].map(v => <option key={v}>{v}</option>)}</select></Field><Field label="Expiry date"><DateEntry value={form.expiry} onChange={change('expiry')}/></Field><Field label="Batch number"><input required maxLength={100} value={form.batch} onChange={change('batch')}/></Field></div><small>At least three months of remaining shelf life. The backend enforces this rule.</small></>}
+    {step === 1 && <><h2>Photo of the synthetic strip label</h2><p>Upload only a computer-created sample label. No real prescriptions or patient information.</p><a href="/demo-synthetic-label.png" download className="demo-primary">Download synthetic sample label</a><Field label="Synthetic PNG or JPEG, under 1 MB"><input type="file" accept="image/png,image/jpeg" onChange={upload} disabled={uploading}/></Field>{uploading && <p role="status">Validating image…</p>}{photo && <><Photo id={photo.photoId}/>{ocr.state === 'running' && <p role="status">Reading the label in your browser… {Math.round(ocr.progress * 100)}%</p>}{ocr.state === 'suggested' && <div className="demo-mint"><strong>Assisted OCR suggestion · confirm the details</strong><p>Your browser read the synthetic label on your device and pre-filled the candidates below. Nothing was accepted automatically.</p></div>}{ocr.state === 'empty' && <div className="demo-mint"><strong>OCR found no readable details · enter them manually</strong><p>Check the uploaded synthetic label against the name, batch and expiry below.</p></div>}{ocr.state === 'failed' && <div className="demo-mint"><strong>Assisted OCR unavailable · enter the details manually</strong><p>Check the uploaded synthetic label against the name, batch and expiry below.</p></div>}<Field label="Candidate medicine name"><input required value={form.name} onChange={change('name')}/></Field><Field label="Candidate batch"><input required value={form.batch} onChange={change('batch')}/></Field><Field label="Candidate expiry"><DateEntry value={form.expiry} onChange={change('expiry')}/></Field><label className="demo-check"><input type="checkbox" required checked={form.photoConfirmed} onChange={change('photoConfirmed')}/>I manually checked these details against my synthetic label.</label></>}</>}
+    {step === 2 && <><h2>Condition & declaration</h2><label className="demo-check"><input type="checkbox" required checked={form.sealed} onChange={change('sealed')}/>The fictional pack is sealed and unopened.</label><Field label="Fictional storage conditions"><textarea required maxLength={300} placeholder="Cool, dry place; away from sunlight" value={form.storage} onChange={change('storage')}/></Field><label className="demo-check"><input type="checkbox" required checked={form.declared} onChange={change('declared')}/>This is synthetic demo data. No physical medicine, medical data or real address is involved.</label></>}
+    {step === 3 && <><h2>Review your fictional donation</h2><dl className="demo-details"><dt>Medicine</dt><dd>{form.name}</dd><dt>Quantity</dt><dd>{form.quantity} {form.unit}</dd><dt>Expiry</dt><dd>{form.expiry}</dd><dt>Batch</dt><dd>{form.batch}</dd><dt>Storage</dt><dd>{form.storage}</dd></dl><div className="demo-mint">Submission goes to a demo administrator. It is not medical or regulatory clearance.</div></>}
+    <div className="demo-actions">{step > 0 && <button type="button" onClick={() => setStep(step - 1)}>← Back</button>}<button className="demo-primary" disabled={step === 1 && (!photo || !form.photoConfirmed)}>{step === 3 ? 'Submit for review' : 'Continue →'}</button></div></form></>;
 }
 
-export function useAuth() {
-  const value = useContext(AuthContext);
-  if (!value) throw new Error('useAuth must be used inside AuthProvider');
-  return value;
+function MedicineCard({ medicine: m, admin, run, request, token }) {
+  const [events, setEvents] = useState(null); const [note, setNote] = useState('');
+  return <article className="demo-card"><div className="demo-card-heading"><h2>{m.name}</h2><Badge>{status(m.status)}</Badge></div><p>{m.medicine_form} · {m.quantity} {m.unit}</p><dl className="demo-details"><dt>Expiry</dt><dd>{day(m.expiry_date)}</dd><dt>Batch</dt><dd>{m.batch_no}</dd><dt>Available</dt><dd>{m.available ?? m.quantity - m.reserved} {m.unit}</dd>{m.distance !== undefined && <><dt>Distance</dt><dd>{m.distance} km · approximate</dd></>}</dl><small>Label details confirmed by donor · assisted OCR suggestion only</small>
+    {request && <button className="demo-primary" onClick={() => request(m)}>Request</button>}
+    {!request && <><button onClick={async () => setEvents(await run(`/medicines/${m.medicine_id}/events`))}>View persisted timeline</button>{events && <Timeline items={events.map(e => [e.message, e.created_at, e.event_id])}/>}</>}
+    {admin && <><Photo id={m.photo_id}/><p>Sealed: {String(Boolean(m.sealed))} · Declaration: {String(Boolean(m.declared))}</p><p>Storage: {m.storage_note}</p>{m.status === 'LISTED' && <><Field label="Fictional review note"><textarea required maxLength={300} value={note} onChange={e => setNote(e.target.value)}/></Field><div className="demo-actions"><button onClick={() => run(`/medicines/${m.medicine_id}/review`, { method: 'POST', body: { approve: false, note } })} disabled={!note.trim()}>Reject</button><button className="demo-primary" disabled={!note.trim()} onClick={() => run(`/medicines/${m.medicine_id}/review`, { method: 'POST', body: { approve: true, note } })}>Approve fictional listing</button></div></>}</>}
+  </article>;
 }
+
+function RequestCard({ record: r, role, run }) {
+  const [when, setWhen] = useState(''); const [note, setNote] = useState(''); const [code, setCode] = useState(''); const [revealed, setRevealed] = useState('');
+  const donor = role === 'DONOR';
+  return <article className="demo-card"><div className="demo-card-heading"><h2>{r.medicine_name}</h2><Badge>{status(r.status)}</Badge></div><h3>{r.org_name}</h3><Badge>{r.verified ? 'Verified fictional NGO' : 'Pending verification'}</Badge><dl className="demo-details"><dt>Registration</dt><dd>{r.license_no}</dd><dt>Quantity</dt><dd>{r.quantity}</dd><dt>NGO note</dt><dd>{r.note}</dd></dl>
+    <Timeline items={[["Request sent", r.requested_at], [r.status === 'DECLINED' ? 'Declined' : 'Donor review / accepted', r.approved_at], ['Simulated collection scheduled', r.scheduled_at], ['Collected', r.completed_at], ['Received · simulation', r.completed_at]]}/>
+    {donor && r.status === 'PENDING' && <><Field label="Decision note"><input maxLength={300} value={note} onChange={e => setNote(e.target.value)}/></Field><div className="demo-actions"><button disabled={!note.trim()} onClick={() => run(`/requests/${r.request_id}/decision`, { method: 'POST', body: { approve: false, note } })}>Decline</button><button className="demo-primary" disabled={!note.trim()} onClick={() => run(`/requests/${r.request_id}/decision`, { method: 'POST', body: { approve: true, note } })}>Accept request</button></div></>}
+    {r.status === 'APPROVED' && <><div className="demo-mint"><strong>{r.scheduled_for ? 'Simulated collection scheduled' : 'Ready to schedule'}</strong><p>{date(r.scheduled_for)}</p><p>{r.collection_note || 'No physical handoff or real address.'}</p></div>{donor ? <><form onSubmit={e => { e.preventDefault(); setRevealed(''); run(`/requests/${r.request_id}/schedule`, { method: 'POST', body: { when, note } }); }}><Field label="Simulated collection date and time"><DateEntry time value={when} onChange={e => setWhen(e.target.value)}/></Field><Field label="Fictional collection instructions"><input required maxLength={200} value={note} onChange={e => setNote(e.target.value)} placeholder="Synthetic pickup point A; no real address"/></Field><button className="demo-primary">{r.scheduled_for ? 'Reschedule / rotate code' : 'Schedule simulated collection'}</button></form>{r.scheduled_for && <div className="demo-code-panel"><p>Donor only · private handoff code</p><button onClick={async () => { const value = await run(`/requests/${r.request_id}/code`); if (value) setRevealed(value.code); }}>Reveal my handoff code</button>{revealed && <output aria-label="Donor handoff code">{revealed}</output>}<small>Expires {date(r.code_expires)}. Five incorrect attempts lock the code. Reschedule to replace it.</small></div>}</> : role === 'NGO' && r.scheduled_for && <form className="demo-code-panel" onSubmit={async e => { e.preventDefault(); const result = await run(`/requests/${r.request_id}/collect`, { method: 'POST', body: { code } }); if (result !== undefined) setCode(''); }}><Field label="Donor's four-digit handoff code"><input type="password" required inputMode="numeric" pattern="[0-9]{4}" maxLength={4} autoComplete="off" value={code} onChange={e => setCode(e.target.value.replace(/\D/g, ''))}/></Field><button className="demo-primary">Confirm simulated collection</button><small>Only a correct, unexpired code completes the simulated record.</small></form>}</>}
+  </article>;
+}
+
+export default function DemoApp() {
+  const { session, logout, refreshProfile } = useAuth(); const location = useLocation(); const navigate = useNavigate();
+  const [summaryData, setSummary] = useState(null), [recordData, setRecords] = useState({ path: '', token: '', items: [] }), [error, setError] = useState(''), [message, setMessage] = useState(''), [busy, setBusy] = useState(false);
+  const [more, setMore] = useState(false);
+  const [filters, setFilters] = useState({ radius: 10, months: 0, category: '' }); const [selected, setSelected] = useState(null); const [quantity, setQuantity] = useState(1); const [note, setNote] = useState('');
+  const role = session?.user.role, path = location.pathname;
+  const summary = summaryData && summaryData.token === session?.token ? summaryData.data : null;
+  const records = recordData.path === path && recordData.token === session?.token ? recordData.items : [];
+  async function reload() {
+    if (!session) return;
+    const data = await demoRequest('/api/demo/summary', session.token); setSummary({ token: session.token, data });
+    if (path === '/browse' && data.user.verified) setRecords({ path, token: session.token, items: await demoRequest(`/api/demo/browse?radius=${filters.radius}&months=${filters.months}&category=${encodeURIComponent(filters.category)}`, session.token) });
+    else if (path === '/notifications') setRecords({ path, token: session.token, items: await demoRequest('/api/demo/notifications', session.token) });
+  }
+  useEffect(() => { window.scrollTo?.({top:0}); setMore(false); setError(''); setMessage(''); setSelected(null); reload().catch(err => setError(err.message)); }, [session?.token, path, filters.radius, filters.months, filters.category]);
+  async function run(route, options) { if (busy) return; setBusy(true); setError(''); setMessage('');
+    try { const result = await demoRequest(`/api/demo${route}`, session.token, options); if (options?.method === 'POST') { await reload(); setMessage('Saved to the isolated MySQL database.'); } return result; }
+    catch (err) { setError(err.message); return undefined; } finally { setBusy(false); }
+  }
+  if (!session) return <Login/>;
+  if (['/', '/login', '/register'].includes(path) || path.startsWith('/dashboard/')) return <Navigate to="/dashboard" replace/>;
+  const links = role === 'DONOR' ? [['/dashboard', Home, 'Dashboard'], ['/donations/new', Plus, 'New donation'], ['/donations', ClipboardList, 'My donations'], ['/requests', Users, 'NGO requests'], ['/collections', Truck, 'Collections']] : role === 'ADMIN' ? [['/dashboard', Home, 'Overview'], ['/donations', ShieldCheck, 'Medicine review'], ['/admin', Users, 'NGO applications'], ['/requests', ClipboardList, 'Request monitor']] : [['/dashboard', Home, 'Dashboard'], ['/browse', Search, 'Browse donations'], ['/requests', ClipboardList, 'My requests'], ['/collections', Truck, 'Collections']];
+  links.push(['/notifications', Bell, 'Notifications'], ['/help', CircleHelp, 'Help']);
+  const medicines = summary?.medicines || [], requests = summary?.requests || [], current = summary?.user;
+  const stats = role === 'DONOR' ? [['Donations', medicines.length], ['In review', medicines.filter(m => m.status === 'LISTED').length], ['Approved / listed', medicines.filter(m => m.status === 'APPROVED').length], ['Simulated collections', requests.filter(r => r.status === 'COLLECTED').length]] : role === 'NGO' ? [['Available nearby', summary?.eligible || 0], ['Active requests', requests.filter(r => ['PENDING', 'APPROVED'].includes(r.status)).length], ['Simulated received', requests.filter(r => r.status === 'COLLECTED').length], ['Notifications', summary?.unread || 0]] : [['Accounts', summary?.accounts?.length || 0], ['Medicine records', medicines.length], ['Pending review', medicines.filter(m => m.status === 'LISTED').length], ['Requests', requests.length]];
+  return <div className="demo-shell"><aside className="demo-sidebar"><Link className="demo-logo" to="/dashboard"><HeartHandshake/> MedBridge</Link><small>Medicine donation, bridged</small><nav aria-label="Demo workspace">{links.map(([to, Icon, label]) => <NavLink end key={to} to={to}><Icon size={16}/>{label}</NavLink>)}</nav><div className="demo-profile"><strong>{current?.name || session.user.name}</strong><small>{current?.org_name || role}</small><Badge>● DEMO</Badge><button onClick={() => { logout(); navigate('/login'); }}><LogOut size={15}/> Sign out</button></div></aside><main className="demo-main"><header className="demo-topbar"><Link className="demo-mobile-brand" to="/dashboard">MedBridge</Link><Badge>● FICTIONAL DEMO</Badge><Link to="/notifications" aria-label={`Notifications, ${summary?.unread || 0} unread`}><Bell size={20}/><span>{summary?.unread || 0}</span></Link></header><div className="demo-content" aria-busy={busy}>{error && <div role="alert" className="demo-error">{error}</div>}{message && <div role="status" className="demo-mint">{message}</div>}
+    {path === '/dashboard' && <><h1>{role === 'DONOR' ? `Good morning, ${current?.name?.split(' ')[0] || 'Meera'}` : role === 'ADMIN' ? 'Demo review desk' : current?.org_name || 'NGO workspace'}</h1><p className="demo-muted">A little generosity can go a long way.</p>{role === 'NGO' && <div className="demo-mint"><strong>{current?.verified ? '✓ Verified fictional NGO' : 'Awaiting demo verification'}</strong><p>{current?.verified ? 'Demonstration access only. Not regulatory clearance.' : 'Browse and collection permissions remain restricted.'}</p>{!current?.verified && <button onClick={() => run('/ngo-application', { method: 'POST' })}>Apply / reapply for demo verification</button>}<button onClick={async () => { await refreshProfile(); await reload(); }}>Refresh profile</button></div>}<div className="demo-stats">{stats.map(([label, count]) => <article className="demo-card" key={label}><Leaf size={17}/><strong>{count}</strong><small>{label}</small></article>)}</div><div className="demo-grid two"><section className="demo-card"><h2>{role === 'DONOR' ? 'Recent donations' : 'Recent requests'}</h2>{role === 'DONOR' ? medicines.length ? <div className="demo-table">{medicines.slice(0, 5).map(m => <Link to="/donations" key={m.medicine_id}><strong>{m.name}</strong><span>{day(m.expiry_date)}</span><Badge>{status(m.status)}</Badge></Link>)}</div> : <Empty/> : requests.length ? requests.slice(0, 4).map(r => <p key={r.request_id}>{r.medicine_name} · {status(r.status)}</p>) : <Empty/>}</section><section className="demo-mint"><h2>{role === 'DONOR' ? 'Have medicines you no longer need?' : role === 'ADMIN' ? 'Every fictional listing needs review' : 'Stock for your fictional care kits'}</h2><p>This demonstration uses synthetic records only. No physical medicine changes hands.</p><Link className="demo-primary" to={role === 'DONOR' ? '/donations/new' : role === 'ADMIN' ? '/donations' : '/browse'}>{role === 'DONOR' ? '+ New donation' : role === 'ADMIN' ? 'Review submissions' : 'Browse approved donations'}</Link></section></div></>}
+    {path === '/donations/new' && (role === 'DONOR' ? <DonationForm run={run}/> : <Empty>This screen is for donors.</Empty>)}
+    {path === '/donations' && <><h1>{role === 'ADMIN' ? 'Medicine review' : 'My donations'}</h1><p className="demo-muted">Real persisted records · fictional review decisions</p><div className="demo-grid two">{medicines.map(m => <MedicineCard key={m.medicine_id} medicine={m} admin={role === 'ADMIN'} run={run}/>)}</div>{!medicines.length && <Empty/>}</>}
+    {path === '/browse' && <><h1>Browse donations</h1><p className="demo-muted">Approved by our demo review team · within 10 km</p>{current?.verified && role === 'NGO' ? <><div className="demo-filters"><button className={filters.radius === 10 && !filters.months && !filters.category ? 'active' : ''} onClick={() => setFilters({ radius: 10, months: 0, category: '' })}>All eligible</button><button className={filters.radius === 5 ? 'active' : ''} onClick={() => setFilters(s => ({ ...s, radius: s.radius === 5 ? 10 : 5 }))}>Within 5 km</button><button className={filters.months ? 'active' : ''} onClick={() => setFilters(s => ({ ...s, months: s.months ? 0 : 6 }))}>Expiry &gt; 6 months</button><label>Category <select value={filters.category} onChange={e => setFilters(s => ({ ...s, category: e.target.value }))}><option value="">All categories</option>{['General', 'Vitamin', 'Allergy', 'Rehydration'].map(v => <option key={v}>{v}</option>)}</select></label></div>{selected ? <form className="demo-card demo-form" onSubmit={async e => { e.preventDefault(); const value = await run(`/medicines/${selected.medicine_id}/requests`, { method: 'POST', body: { quantity: Number(quantity), note } }); if (value) { setSelected(null); navigate('/requests'); } }}><h2>Request {selected.name}</h2><p>{selected.available} {selected.unit} available · {selected.distance} km away</p><Photo id={selected.photo_id}/><Field label="Quantity requested"><input required type="number" min="1" max={selected.available} value={quantity} onChange={e => setQuantity(e.target.value)}/></Field><Field label="Note to the donor"><textarea required maxLength={500} value={note} onChange={e => setNote(e.target.value)}/></Field><div className="demo-actions"><button type="button" onClick={() => setSelected(null)}>Back</button><button className="demo-primary">Send request</button></div></form> : <div className="demo-grid three">{records.map(m => <MedicineCard key={m.medicine_id} medicine={m} run={run} request={m => { setSelected(m); setQuantity(1); setNote(''); }}/>)}</div>}{!selected && !records.length && <Empty>No approved eligible listings match these filters.</Empty>}</> : <div className="demo-mint">Verification is required before browsing or requesting. Apply from your dashboard.</div>}</>}
+    {['/requests', '/collections'].includes(path) && <><h1>{path === '/requests' ? role === 'DONOR' ? 'NGO requests' : 'My requests' : 'Collection & handoff'}</h1><p className="demo-muted">No real addresses. Every collection is a simulated database event.</p><div className="demo-grid two">{requests.filter(r => path !== '/collections' || ['APPROVED', 'COLLECTED'].includes(r.status)).map(r => <RequestCard key={r.request_id} record={r} role={role} run={run}/>)}</div>{!requests.length && <Empty/>}</>}
+    {path === '/admin' && <><h1>NGO applications & accounts</h1>{role === 'ADMIN' ? <><div className="demo-grid two">{summary?.accounts?.map(u => <article className="demo-card" key={u.user_id}><h2>{u.org_name || u.name}</h2><p>{u.email}</p><Badge>{u.role} · {u.verified ? 'Verified demo' : u.application_status || 'Account'}</Badge>{u.role === 'NGO' && u.application_status && <div className="demo-actions"><button onClick={() => run(`/ngos/${u.user_id}/review`, { method: 'POST', body: { approve: false, note: 'Fictional review rejected; demonstration only.' } })}>Reject / revoke demo verification</button><button className="demo-primary" onClick={() => run(`/ngos/${u.user_id}/review`, { method: 'POST', body: { approve: true, note: 'Fictional verification only; no regulatory clearance.' } })}>Approve demo NGO</button></div>}</article>)}</div><h2>Audit events</h2><div className="demo-card">{summary?.audit?.map(e => <p key={e.event_id}><strong>{e.actor}</strong> · {e.message}<small>{date(e.created_at)}</small></p>)}</div></> : <Empty>Administrator access is required.</Empty>}</>}
+    {path === '/notifications' && <><h1>Notifications</h1><p className="demo-muted">Your fictional donation journey, one event at a time.</p><div className="demo-card demo-notifications">{records.map(n => <article key={n.notif_id} className={n.read ? '' : 'unread'}><Bell size={18}/><div><strong>{n.message}</strong><small>{date(n.sent_at)}</small></div>{!n.read && <button aria-label={`Mark notification ${n.notif_id} read`} onClick={() => run(`/notifications/${n.notif_id}/read`, { method: 'POST' })}>Mark read</button>}</article>)}{!records.length && <Empty/>}</div></>}
+    {path === '/help' && <div className="demo-card"><h1>About this demonstration</h1><p>All accounts, labels and collection records are fictional. A demo administrator reviews submissions; this is not medical advice or regulatory clearance.</p><p>Use only synthetic labels. The browser may suggest label details with assisted on-device OCR; the donor always confirms them. Handoff codes expire and are attempt limited.</p><p>Records persist in isolated MySQL. Refreshing the browser ends your in-memory session; sign in again to see your records.</p></div>}
+    <footer className="demo-footer">All records are synthetic. Not a medical service. No physical redistribution.</footer></div></main><nav className="demo-bottom" aria-label="Mobile demo navigation">{links.slice(0, 3).concat([['/notifications', Bell, 'Alerts']]).map(([to, Icon, label]) => <NavLink end key={to} to={to}><Icon size={19}/><span>{label}</span></NavLink>)}<button aria-expanded={more} aria-controls="demo-extra-navigation" onClick={() => setMore(!more)}><Users size={19}/><span>More</span></button></nav>{more && <nav id="demo-extra-navigation" className="demo-mobile-more" aria-label="More demo pages" onKeyDown={e => {if(e.key === "Escape") setMore(false);}}>{links.map(([to, Icon, label]) => <NavLink end key={to} to={to} onClick={() => setMore(false)}><Icon size={17}/>{label}</NavLink>)}<button onClick={() => {logout();navigate("/login");}}>Sign out</button><button onClick={() => setMore(false)}>Close menu</button></nav>}</div>;
+      }
