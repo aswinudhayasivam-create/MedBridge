@@ -1,90 +1,47 @@
-package com.medbridge.config;
+import { ApiError } from './http.js';
 
-import com.medbridge.security.JwtAuthenticationFilter;
-import com.medbridge.review.ReviewAccessFilter;
-import jakarta.servlet.DispatcherType;
-import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.Arrays;
-import java.util.List;
-
-@Configuration
-@EnableMethodSecurity
-public class SecurityConfig {
-    @Bean
-    PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(12);
-    }
-
-    // Disables Boot's generated in-memory development login; MedBridge authenticates via JWT.
-    @Bean
-    UserDetailsService noPasswordLoginUsers() {
-        return username -> {
-            throw new UsernameNotFoundException("Password login is not supported");
-        };
-    }
-
-    // Register the JWT filter only in Spring Security's chain, not separately as a servlet filter.
-    @Bean
-    FilterRegistrationBean<JwtAuthenticationFilter> jwtFilterRegistration(JwtAuthenticationFilter jwtFilter) {
-        FilterRegistrationBean<JwtAuthenticationFilter> registration = new FilterRegistrationBean<>(jwtFilter);
-        registration.setEnabled(false);
-        return registration;
-    }
-
-    @Bean
-    FilterRegistrationBean<ReviewAccessFilter> reviewFilterRegistration(ReviewAccessFilter filter) {
-        var registration = new FilterRegistrationBean<>(filter); registration.setEnabled(false); return registration;
-    }
-
-    @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtFilter, ReviewAccessFilter reviewFilter) throws Exception {
-        return http
-            .csrf(csrf -> csrf.disable())
-            .cors(cors -> {})
-            .httpBasic(basic -> basic.disable())
-            .formLogin(form -> form.disable())
-            .logout(logout -> logout.disable())
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .exceptionHandling(errors -> errors.authenticationEntryPoint(
-                (request, response, exception) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED)))
-            .authorizeHttpRequests(auth -> auth
-                .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
-                .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
-                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/health", "/api/auth/local-mode", "/api/auth/review-mode", "/api/review/ready").permitAll()
-                .anyRequest().authenticated())
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(reviewFilter, JwtAuthenticationFilter.class)
-            .build();
-    }
-
-    @Bean
-    CorsConfigurationSource corsConfigurationSource(@Value("${app.frontend-url}") String frontendUrl) {
-        CorsConfiguration cors = new CorsConfiguration();
-        List<String> origins = Arrays.stream(frontendUrl.split(","))
-            .map(String::trim).filter(value -> !value.isBlank()).toList();
-        cors.setAllowedOrigins(origins);
-        cors.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        cors.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-        cors.setAllowCredentials(false);
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", cors);
-        return source;
-    }
+export function canEnableReview({ build, mode, enabled, apiBaseUrl, origin, development = false }) {
+  if (!build || mode !== 'review' || enabled !== 'true') return false;
+  try {
+    const api = new URL(apiBaseUrl), page = new URL(origin);
+    if (api.username || api.password || api.search || api.hash || api.pathname !== '/') return false;
+    const hosted = api.protocol === 'https:' && page.protocol === 'https:' && !['localhost', '127.0.0.1'].includes(api.hostname);
+    const local = development && api.origin === 'http://127.0.0.1:18080' && page.origin === 'http://127.0.0.1:5174';
+    return hosted || local;
+  } catch { return false; }
 }
+export const REVIEW_ENABLED = canEnableReview({ build: __MEDBRIDGE_REVIEW_BUILD__, mode: import.meta.env.MODE,
+  enabled: import.meta.env.VITE_ENABLE_REVIEW, apiBaseUrl: import.meta.env.VITE_REVIEW_API_ORIGIN || '',
+  origin: typeof window === 'undefined' ? '' : window.location.origin, development: import.meta.env.DEV });
+
+export function createReviewClient({ enabled, baseUrl, fetcher = globalThis.fetch, now = () => Date.now() }) {
+  async function send(path, { method = 'GET', body, token, binary = false } = {}) {
+    const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 20000);
+    try {
+      const multipart = body instanceof FormData;
+      const response = await fetcher(baseUrl + path, { method, credentials: 'omit', cache: 'no-store', signal: controller.signal,
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(!multipart && body !== undefined ? { 'Content-Type': 'application/json' } : {}) },
+        ...(body === undefined ? {} : { body: multipart ? body : JSON.stringify(body) }) });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new ApiError(data.error || `Review request failed (${response.status}).`, response.status);
+      }
+      if (binary) return response.blob();
+      const text = await response.text(); return text ? JSON.parse(text) : null;
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      throw new ApiError('Unable to contact the protected review API.', 0);
+    } finally { clearTimeout(timer); }
+  }
+  return async function request(path, options = {}) {
+    if (!enabled) throw new ApiError('Review access is unavailable.', 403);
+    if (!/^\/api\/(?:auth\/(?:login|me)|demo\/)/.test(path) || path.includes('..') || path.includes('#') || path.includes('\\')) throw new ApiError('Invalid review route.', 400);
+    const capability = await send('/api/auth/review-mode');
+    if (capability?.environment !== 'isolated-review' || capability.reviewEnabled !== true || capability.registrationEnabled !== false || capability.syntheticOnly !== true
+      || !Number.isFinite(Date.parse(capability.expiresAt)) || Date.parse(capability.expiresAt) <= now()
+      || Date.parse(capability.expiresAt) > Date.parse('2026-11-22T18:30:00Z')) throw new ApiError('Review access has expired or is unavailable.', 403);
+    return send(path, options);
+  };
+}
+export const reviewRequest = createReviewClient({ enabled: REVIEW_ENABLED, baseUrl: import.meta.env.VITE_REVIEW_API_ORIGIN || '' });
