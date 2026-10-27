@@ -1,5 +1,7 @@
 # System architecture and environment boundaries
 
+> Hosted review update (27 October 2026): email/password-only login is deployed. The shared invitation-key requirement is removed. JWT, roles, ownership, isolated database/TLS, disabled registration, rate limits and the end-of-22-November-2026 Asia/Kolkata cutoff remain. Public local demo passwords still do not work online. Working review passwords are never published.
+
 ## TiDB target boundary
 
 The planned hosted review database is MySQL-compatible TiDB Cloud Starter; local MySQL and the full application remain unchanged. The compiled destination approval pins both the gateway hostname and Starter username prefix; it cannot be broadened with environment overrides. The owner-approved destination is now pinned after authenticated TLS verification; database enforcement proof and restricted-runtime setup remain incomplete and readiness stays closed. TLS uses VERIFY_IDENTITY and Java system roots, DML-only grants and marker checks precede seeding, and the original fixed cutoff remains enforced. No hosted compatibility is claimed. See [TiDB migration](docs/TIDB-REVIEW-MIGRATION.md).
@@ -22,11 +24,11 @@ sequenceDiagram
     participant G as Server review gate
     participant A as Authentication / shared workflow API
     participant D as Dedicated review MySQL
-    U->>F: Private invitation + separate review login
+    U->>F: Separate private role email/password login
     F->>G: Protected capability handshake
     G->>G: Config / database proof / cutoff / rate limit
     G-->>F: Synthetic-only capability, fixed maximum expiry
-    F->>A: Password login with invitation header
+    F->>A: Password login without invitation header
     A->>D: BCrypt account lookup
     A-->>F: Expiring JWT (memory only)
     F->>G: Workflow request + gate + JWT
@@ -46,7 +48,7 @@ sequenceDiagram
 
 ## Requests and expiry
 
-Review requests pass a private invitation-key filter before JWT authentication. Login is bounded to 10 attempts/minute per socket peer; API calls to 300/minute, with at most 2048 current peer buckets. Forwarded IP headers are not trusted. Behind Render this can impose a shared quota; it is basic protection, not distributed DDoS prevention. Process restart resets counters, while Vercel protection and private credentials remain required.
+Review requests pass environment/expiry readiness guards and JWT authentication; login requires private role email/password, without an invitation key. Login is bounded to 10 attempts/minute per socket peer; API calls to 300/minute, with at most 2048 current peer buckets. Forwarded IP headers are not trusted. Behind Render this can impose a shared quota; it is basic protection, not distributed DDoS prevention. Process restart resets counters, while Vercel protection and private credentials remain required.
 
 Every review API request rechecks configuration and server time. At or after `2026-11-22T18:30:00Z`, requests and readiness fail closed even with a previously issued JWT. The deadline cannot be configured later. No scheduled cloud job or frontend clock is required to enforce it.
 
