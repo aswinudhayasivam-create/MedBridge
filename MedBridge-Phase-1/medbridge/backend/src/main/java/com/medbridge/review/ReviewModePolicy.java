@@ -1,8 +1,6 @@
 package com.medbridge.review;
 
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.time.*;
 import java.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,10 +31,6 @@ public class ReviewModePolicy {
         try { requireConfiguration(); return databaseVerified; } catch (RuntimeException denied) { return false; }
     }
     void markDatabaseVerified() { requireConfiguration(); databaseVerified = true; }
-    public boolean acceptsKey(String key) {
-        return key != null && key.length() <= 160 && MessageDigest.isEqual(
-            property("app.review.access-key").getBytes(StandardCharsets.UTF_8), key.getBytes(StandardCharsets.UTF_8));
-    }
     public void requireConfiguration() {
         try {
             require(Arrays.equals(env.getActiveProfiles(), new String[]{"review"}));
@@ -74,7 +68,7 @@ public class ReviewModePolicy {
                 require(frontend.getRawQuery() == null && frontend.getFragment() == null && frontend.getPath().isEmpty());
             }
             Set<String> secrets = new HashSet<>();
-            for (String key : new String[]{"app.review.access-key", "app.jwt.secret", "app.review.donor-password", "app.review.ngo-password", "app.review.pending-password", "app.review.admin-password", "spring.datasource.password"}) {
+            for (String key : new String[]{"app.jwt.secret", "app.review.donor-password", "app.review.ngo-password", "app.review.pending-password", "app.review.admin-password", "spring.datasource.password"}) {
                 String value = property(key);
                 require(value.length() >= (key.endsWith("password") ? 24 : 48) && value.length() <= 128);
                 require(value.chars().distinct().count() >= 12 && !value.toLowerCase(Locale.ROOT).contains("change_me"));
