@@ -1,6 +1,8 @@
 # Protected online review deployment guide — not executed
 
-> Hosted review update (27 October 2026): email/password-only login is deployed. The shared invitation-key requirement is removed. JWT, roles, ownership, isolated database/TLS, disabled registration, rate limits and the end-of-22-November-2026 Asia/Kolkata cutoff remain. Public local demo passwords still do not work online. Working review passwords are never published.
+> Public-demo change (27 October 2026): the owner approved publishing newly rotated disposable donor, NGO, pending-NGO and admin logins in README. Anyone can use those roles and edit fictional records. Existing private passwords were not published. Do not enter real data. Other security boundaries and cutoff remain.
+
+> Hosted review update (27 October 2026): email/password-only login is deployed. The shared invitation-key requirement is removed. JWT, roles, ownership, isolated database/TLS, disabled registration, rate limits and the end-of-22-November-2026 Asia/Kolkata cutoff remain. Public local demo passwords still do not work online. The owner approved public disposable role logins for this synthetic demo; existing private credentials were replaced before publication.
 
 ## Current target: TiDB Starter, pending verification
 
