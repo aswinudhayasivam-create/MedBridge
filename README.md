@@ -1,6 +1,6 @@
 # MedBridge — Smart Medicine Redistribution Network
 
-> Hosted review update (27 October 2026): email/password-only login is deployed. The shared invitation-key requirement is removed. JWT, roles, ownership, isolated database/TLS, disabled registration, rate limits and the end-of-22-November-2026 Asia/Kolkata cutoff remain. Public local demo passwords still do not work online. Working review passwords are never published.
+> Hosted review update (27 October 2026): email/password-only login is deployed. The shared invitation-key requirement is removed. JWT, roles, ownership, isolated database/TLS, disabled registration, rate limits and the end-of-22-November-2026 Asia/Kolkata cutoff remain. Public local demo passwords still do not work online. Only newly rotated, disposable public demo passwords below are intentionally published.
 
 > **Source status (October 26, 2026):** This README is published on both `main` and the development branch. The **complete React/Spring Boot application** and TiDB review preparation currently live on **[`feature/tidb-hosted-review`](https://github.com/aswinudhayasivam-create/MedBridge/tree/feature/tidb-hosted-review)**; the default `main` application source is still an older Phase 1 snapshot until the draft release pull request passes hosted acceptance. Use the feature branch for local testing. Do not merge or deploy an unverified full-stack release.
 
@@ -8,11 +8,26 @@
 
 **[Open the MedBridge hosted review demo](https://medbridge-review-20261026-git-fe-dcd96f-aswinudhayasivam-create.vercel.app/)** · **[GitHub repository](https://github.com/aswinudhayasivam-create/MedBridge)** · [Local demo setup](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-SETUP.md) · [Project status](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/PROJECT-STATUS.md) · [Final QA / PDF fidelity checklist](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/docs/FINAL-SUBMISSION-RELEASE-CHECKLIST.md)
 
-> **Deployment note (October 27, 2026):** The website link opens the temporary hosted review demo (Vercel frontend, Render backend, TiDB database). It is a fictional demonstration that stays online until **22 November 2026 (Asia/Kolkata)**. The login page is public, but sign-in needs private role email/password accounts that are not published here, and registration is disabled. The free Render backend sleeps when idle, so the first login can take about a minute. The public local demo passwords below **do not work in hosted review mode**. The older `med-bridge-ruddy.vercel.app` page is only a Phase 1 placeholder. Never treat this prototype as a real medicine distribution service.
+> **Deployment note (October 27, 2026):** The website link opens the temporary hosted review demo (Vercel frontend, Render backend, TiDB database). It is a fictional demonstration that stays online until **22 November 2026 (Asia/Kolkata)**. The login page is public, but sign-in needs separate public fictional-demo role accounts listed below, and registration is disabled. The free Render backend sleeps when idle, so the first login can take about a minute. The public local demo passwords below **do not work in hosted review mode**. The older `med-bridge-ruddy.vercel.app` page is only a Phase 1 placeholder. Never treat this prototype as a real medicine distribution service.
+
+## Hosted fictional demo logins - online only
+
+[Open the hosted demo](https://medbridge-review-20261026-git-fe-dcd96f-aswinudhayasivam-create.vercel.app/)
+
+These are intentionally public, disposable credentials for synthetic records only. Anyone can sign in, including as administrator and change fictional records. Never enter real medicine, patient or address information. No invitation key is needed. The previous private role passwords no longer work. Registration stays disabled. Access ends at the end of 22 November 2026 (Asia/Kolkata). Free Render hosting can need about a minute to wake up.
+
+| Demo role | Online email | Public demo-only password |
+|---|---|---|
+| Donor | `donor@review.medbridge.invalid` | `Demo-Donor-C599xKcifZvE58lDbe4G!` |
+| Verified NGO | `ngo@review.medbridge.invalid` | `Demo-Ngo-HTfbLrf5x8bn5iDPnfef!` |
+| Pending NGO | `pending@review.medbridge.invalid` | `Demo-Pending-_Q8cSbJzugmzbbMlqPG-!` |
+| Administrator | `admin@review.medbridge.invalid` | `Demo-Admin-NsMb4uZCxhZlLAdUwZPu!` |
+
+Pending NGO can log in but cannot browse/request medicines until verified. Do not reuse these public passwords on any real account. JWT, role/ownership checks, rate limits, isolated database/TLS and server cutoff remain enforced.
 
 ## Demo login details — local development only
 
-These are deliberately public **fictional local-only** credentials for the tested local MySQL demo. They are rejected by protected hosted-review mode; hosted reviewer passwords are private and must **never** be added to GitHub.
+These are deliberately public **fictional local-only** credentials for the tested local MySQL demo. They are rejected by protected hosted-review mode; the online credentials are separate disposable public demo values listed above.
 
 | Demo role | Email | Password |
 | --- | --- | --- |
@@ -121,7 +136,7 @@ Actual application captures from the completed local walkthrough; illustrated co
 
 ## 11. Demo credentials
 
-The **Donor**, **Verified NGO**, **Pending NGO**, and **Administrator** local demo emails and passwords are listed near the top under [Demo login details](#demo-login-details--local-development-only). See [DEMO-LOGIN.md](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-LOGIN.md) for the exact local-only identity restrictions. Hosted review account passwords are private; no usable hosted credentials are published.
+The **Donor**, **Verified NGO**, **Pending NGO**, and **Administrator** local demo emails and passwords are listed near the top under [Demo login details](#demo-login-details--local-development-only). See [DEMO-LOGIN.md](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-LOGIN.md) for the exact local-only identity restrictions. Hosted review uses the separate disposable public credentials listed above.
 
 ## 12. Online demo
 
