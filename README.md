@@ -4,9 +4,9 @@
 
 ## Website and source code
 
-**[Open the MedBridge website (Vercel frontend)](https://med-bridge-ruddy.vercel.app/)** · **[GitHub repository](https://github.com/aswinudhayasivam-create/MedBridge)** · [Local demo setup](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-SETUP.md) · [Project status](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/PROJECT-STATUS.md) · [Final QA / PDF fidelity checklist](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/docs/FINAL-SUBMISSION-RELEASE-CHECKLIST.md)
+**[Open the MedBridge hosted review demo](https://medbridge-review-20261026-git-re-83d207-aswinudhayasivam-create.vercel.app/)** · **[GitHub repository](https://github.com/aswinudhayasivam-create/MedBridge)** · [Local demo setup](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-SETUP.md) · [Project status](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/PROJECT-STATUS.md) · [Final QA / PDF fidelity checklist](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/docs/FINAL-SUBMISSION-RELEASE-CHECKLIST.md)
 
-> **Deployment note (October 26, 2026):** The website link points to the existing Vercel frontend and is also configured in this repository's GitHub About section. The complete hosted donor–admin–NGO journey is **not yet verified**: the restricted TiDB application account, 11-table review schema, new Render deployment, and protected review frontend still need acceptance. The public local demo passwords below **do not work in hosted review mode**. Never treat this prototype as a real medicine distribution service.
+> **Deployment note (October 27, 2026):** The website link opens the temporary hosted review demo (Vercel frontend, Render backend, TiDB database). It is a fictional demonstration that stays online until **22 November 2026 (Asia/Kolkata)**. The login page is public, but sign-in needs a private invitation key and role accounts that are not published here, and registration is disabled. The free Render backend sleeps when idle, so the first login can take about a minute. The public local demo passwords below **do not work in hosted review mode**. The older `med-bridge-ruddy.vercel.app` page is only a Phase 1 placeholder. Never treat this prototype as a real medicine distribution service.
 
 ## Demo login details — local development only
 
@@ -23,7 +23,7 @@ These are deliberately public **fictional local-only** credentials for the teste
 
 ## Hosted database status
 
-The hosted review is migrating from Aiven to a $0 MySQL-compatible TiDB Cloud Starter instance. The empty review database was created, and authenticated TiDB TLS/SQL compatibility probes passed. The restricted runtime user and 11 application tables still require verification; do not deploy a backend with administrator credentials or assume the online workflow works. Public registration remains disabled, and the protected review expires **October 27, 2026 at 00:00 IST**.
+The hosted review runs on a $0 TiDB Cloud Starter database with a restricted runtime user. The donor, admin and NGO journey was run end to end on the hosted review demo on 26 October 2026, and the donor login was re-checked on 27 October 2026. Public registration remains disabled, and protected review access ends on **22 November 2026 (Asia/Kolkata)**.
 
 See [TiDB migration checklist](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/docs/TIDB-REVIEW-MIGRATION.md), [deployment guide](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEPLOYMENT-GUIDE.md), and [project status](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/PROJECT-STATUS.md). Aiven files remain as legacy references and must not be used to initialize TiDB.
 
@@ -31,7 +31,7 @@ See [TiDB migration checklist](https://github.com/aswinudhayasivam-create/MedBri
 
 React / Vite · Java 17 / Spring Boot 3 · Spring Security / JWT / BCrypt · MySQL 8 (local) / TiDB Starter (hosted target)
 
-> **Evaluation status:** the complete local workflow is verified. A separate protected online review mode is implemented for deployment preparation; **no working hosted review environment or URL is claimed**. Registration, payments and physical medicine transfers are disabled. The online review window ends after October 26, 2026 in Asia/Kolkata time.
+> **Evaluation status:** the complete local workflow is verified, and a protected, fictional hosted review demo is online until 22 November 2026 (Asia/Kolkata): see the link above. Registration, payments and physical medicine transfers are disabled.
 
 [Commit manifest](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/COMMIT-MANIFEST.md) · [Demo logins](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-LOGIN.md) · [Setup](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-SETUP.md) · [Viva walkthrough](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-WALKTHROUGH.md) · [Project status](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/PROJECT-STATUS.md) · [Deployment guide](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEPLOYMENT-GUIDE.md)
 
@@ -174,7 +174,7 @@ Dedicated review adds `review_environment` as an isolation/schema/expiry marker.
 - Public registration disabled by default; no public administrator signup.
 - Exact local-auth guard and local-only `@medbridge.test` identity policy preserved.
 - Review profile defaults disabled, rejects ordinary/local identities and requires a proven dedicated database and private gate.
-- Server-enforced review deadline: **2026-10-27 00:00 Asia/Kolkata**, equivalent to **2026-10-26 18:30 UTC**. Existing JWTs do not bypass expiry.
+- Server-enforced review deadline: **end of 22 November 2026, Asia/Kolkata** (extended from the original 27 October deadline). Existing JWTs do not bypass expiry.
 - BCrypt hashes, in-memory browser JWTs, ownership/role/verification checks and bounded handoff attempts.
 - Hosted review database requires hostname-verifying TLS and restricted DML permissions; no startup schema reset.
 - Bounded per-peer rate limiting, safe errors, no-store responses and exact CORS origin.
@@ -207,4 +207,4 @@ Formal medicine/legal review, real NGO identity validation, revocable sessions, 
 
 Maintainer: **Aswin Udhaya** ([aswinudhayasivam-create](https://github.com/aswinudhayasivam-create)). Current work: [`feature/tidb-hosted-review`](https://github.com/aswinudhayasivam-create/MedBridge/tree/feature/tidb-hosted-review); all historical commits are preserved. Each new commit changes exactly one file.
 
-This is a college engineering demonstration for October 26, 2026. Local implementation and TiDB database compatibility are verified; the complete hosted evaluation is still pending. The TiDB migration branch is published, but it has not been merged into `main`. No production account activation or end-to-end hosted success is implied.
+This is a college engineering demonstration for October 26, 2026. Local implementation is verified, and a temporary protected hosted review demo is online until 22 November 2026. The TiDB migration branch is published, but it has not been merged into `main`. No production account activation is implied.
