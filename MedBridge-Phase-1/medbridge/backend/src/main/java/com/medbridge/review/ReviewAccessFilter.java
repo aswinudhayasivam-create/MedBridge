@@ -7,7 +7,7 @@ import java.util.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-/** The private invitation key supplements JWT roles; it is never a replacement for login. */
+/** Review isolation, expiry and rate limits supplement password/JWT role authentication. */
 @Component
 public class ReviewAccessFilter extends OncePerRequestFilter {
     private final ReviewModePolicy policy;
@@ -31,7 +31,6 @@ public class ReviewAccessFilter extends OncePerRequestFilter {
         // Use only the socket peer. Untrusted Forwarded/X-Forwarded-For cannot evade this limiter.
         if(!allow(request.getRemoteAddr(),path.equals("/api/auth/login"))) { response.setHeader("Retry-After","60");reject(response,429,"Too many requests. Try again later.");return; }
         if("OPTIONS".equals(request.getMethod())) { chain.doFilter(request,response);return; }
-        if(!policy.acceptsKey(request.getHeader("X-MedBridge-Review-Key"))) { reject(response,401,"Authentication required.");return; }
         if(path.equals("/api/auth/register")) { reject(response,503,"Registration is unavailable in this environment.");return; }
         chain.doFilter(request,response);
     }
