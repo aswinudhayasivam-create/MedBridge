@@ -1,5 +1,7 @@
 # Protected online review deployment guide — not executed
 
+> Hosted review update (27 October 2026): email/password-only login is deployed. The shared invitation-key requirement is removed. JWT, roles, ownership, isolated database/TLS, disabled registration, rate limits and the end-of-22-November-2026 Asia/Kolkata cutoff remain. Public local demo passwords still do not work online. Working review passwords are never published.
+
 ## Current target: TiDB Starter, pending verification
 
 Use the [TiDB-specific migration procedure and private configuration checklist](docs/TIDB-REVIEW-MIGRATION.md) for the planned hosted review. Do not execute the legacy Aiven initialization procedure for TiDB. Exact destination/prefix approval, $0/no-card eligibility, constraint enforcement and complete actual TiDB integration evidence remain blockers. No cloud resource changes are authorized by this document. Earlier Aiven instructions below are retained as historical provider-specific guidance only.
@@ -83,23 +85,23 @@ Enter values privately in the dedicated Render service, never GitHub/chat/README
 | `REVIEW_DB_HOST` | Exact approved dedicated Aiven hostname, no protocol |
 | `REVIEW_DB_URL` | `jdbc:mysql://<approved-host>:<port>/medbridgereview20261026?sslMode=VERIFY_IDENTITY&serverTimezone=UTC` |
 | `REVIEW_DB_USERNAME` / `REVIEW_DB_PASSWORD` | Dedicated `mb_review_...` DML-only user / distinct private random password (>=24 characters) |
-| `REVIEW_ACCESS_KEY` / `REVIEW_JWT_SECRET` | Distinct private random values, 48–128 characters, sufficient character diversity |
+| `REVIEW_JWT_SECRET` | Distinct private random values, 48–128 characters, sufficient character diversity |
 | `REVIEW_DONOR_PASSWORD`, `REVIEW_NGO_PASSWORD`, `REVIEW_PENDING_PASSWORD`, `REVIEW_ADMIN_PASSWORD` | Distinct private random passwords, 24–128 characters; never the public local passwords |
 | `REVIEW_FRONTEND_ORIGIN` | One exact HTTPS review origin, no path/trailing slash, query, wildcard or credentials |
 | `APP_ALLOW_REGISTRATION` / `APP_DEMO_WORKFLOWS` | `false` / `false` |
 | `SQL_INIT_MODE` | `never`; review profile also requires effective initialization mode `never` |
 
-Audit attached environment groups, `SPRING_APPLICATION_JSON`, command-line options, `SPRING_CONFIG_*`, datasource/Hikari/JNDI overrides, old `DB_*`, `JWT_SECRET` and frontend settings. Remove conflicts only after approval. Effective ORM DDL must be `none`. Never copy old production connection values into review settings. CA/password/account/signing/invitation values must be distinct private configuration.
+Audit attached environment groups, `SPRING_APPLICATION_JSON`, command-line options, `SPRING_CONFIG_*`, datasource/Hikari/JNDI overrides, old `DB_*`, `JWT_SECRET` and frontend settings. Remove conflicts only after approval. Effective ORM DDL must be `none`. Never copy old production connection values into review settings. CA/password/account/signing values must be distinct private configuration.
 
 ## Vercel review settings
 
-Use a **separate review project** rooted at `MedBridge-Phase-1/medbridge/frontend`, framework Vite, install `npm ci --no-audit --no-fund`, build `npm run build -- --mode review`, output `dist`. Set `VITE_ENABLE_REVIEW=true`, `VITE_REVIEW_API_ORIGIN` to the approved HTTPS review API origin, and both existing auth/demo flags false. No invitation key, password or JWT secret belongs in a `VITE_*` variable. The reviewer enters the private invitation key at login; it stays in memory.
+Use a **separate review project** rooted at `MedBridge-Phase-1/medbridge/frontend`, framework Vite, install `npm ci --no-audit --no-fund`, build `npm run build -- --mode review`, output `dist`. Set `VITE_ENABLE_REVIEW=true`, `VITE_REVIEW_API_ORIGIN` to the approved HTTPS review API origin, and both existing auth/demo flags false. No invitation key, password or JWT secret belongs in a `VITE_*` variable. The reviewer enters only their private role email and password at login. No invitation key is required; JWTs stay in memory.
 
 Preserve Vercel Authentication/deployment protection. Verify the intended evaluator can access it on the actual free plan before committing to an audience. [Vercel Authentication](https://vercel.com/docs/deployment-protection/methods-to-protect-deployments/vercel-authentication) availability/audience constraints must be checked; no paid password-protection feature or bypass is assumed. If protected access cannot be arranged within free entitlement, stop and report the blocker. Do not expose a public fallback URL automatically.
 
 ## Verification before exposure
 
-Record exact backend/frontend Git SHAs. Confirm TLS hostname verification and private DB grants/marker, readiness 200, no real data, public registration denied, original four local identities denied, missing invitation denied, wrong role/owner denied, rate limiting, pending NGO restrictions and server cutoff. Run the entire donor → admin → NGO → donor → code → simulated completion journey through the **hosted browser/API/MySQL**, then restart/redeploy the review backend and verify persistence. Review network/console errors, responsive widths and absence of public local credentials/secrets in compiled assets. Keep working reviewer credentials/URL private until the owner approves their exposure. Local rehearsal results alone do not establish online success.
+Record exact backend/frontend Git SHAs. Confirm TLS hostname verification and private DB grants/marker, readiness 200, no real data, public registration denied, original four local identities denied, missing JWT denied, wrong role/owner denied, rate limiting, pending NGO restrictions and server cutoff. Run the entire donor → admin → NGO → donor → code → simulated completion journey through the **hosted browser/API/MySQL**, then restart/redeploy the review backend and verify persistence. Review network/console errors, responsive widths and absence of public local credentials/secrets in compiled assets. Keep working reviewer credentials/URL private until the owner approves their exposure. Local rehearsal results alone do not establish online success.
 
 ## Fail-closed rollback, containment and safe reset
 
