@@ -6,9 +6,9 @@
 
 ## Website and source code
 
-**[Open the MedBridge hosted review demo](https://medbridge-review-20261026-git-re-83d207-aswinudhayasivam-create.vercel.app/)** · **[GitHub repository](https://github.com/aswinudhayasivam-create/MedBridge)** · [Local demo setup](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-SETUP.md) · [Project status](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/PROJECT-STATUS.md) · [Final QA / PDF fidelity checklist](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/docs/FINAL-SUBMISSION-RELEASE-CHECKLIST.md)
+**[Open the MedBridge hosted review demo](https://medbridge-review-20261026-git-fe-dcd96f-aswinudhayasivam-create.vercel.app/)** · **[GitHub repository](https://github.com/aswinudhayasivam-create/MedBridge)** · [Local demo setup](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/DEMO-SETUP.md) · [Project status](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/PROJECT-STATUS.md) · [Final QA / PDF fidelity checklist](https://github.com/aswinudhayasivam-create/MedBridge/blob/feature/tidb-hosted-review/docs/FINAL-SUBMISSION-RELEASE-CHECKLIST.md)
 
-> **Deployment note (October 27, 2026):** The website link opens the temporary hosted review demo (Vercel frontend, Render backend, TiDB database). It is a fictional demonstration that stays online until **22 November 2026 (Asia/Kolkata)**. The login page is public, but sign-in needs a private role email/password accounts that are not published here, and registration is disabled. The free Render backend sleeps when idle, so the first login can take about a minute. The public local demo passwords below **do not work in hosted review mode**. The older `med-bridge-ruddy.vercel.app` page is only a Phase 1 placeholder. Never treat this prototype as a real medicine distribution service.
+> **Deployment note (October 27, 2026):** The website link opens the temporary hosted review demo (Vercel frontend, Render backend, TiDB database). It is a fictional demonstration that stays online until **22 November 2026 (Asia/Kolkata)**. The login page is public, but sign-in needs private role email/password accounts that are not published here, and registration is disabled. The free Render backend sleeps when idle, so the first login can take about a minute. The public local demo passwords below **do not work in hosted review mode**. The older `med-bridge-ruddy.vercel.app` page is only a Phase 1 placeholder. Never treat this prototype as a real medicine distribution service.
 
 ## Demo login details — local development only
 
@@ -175,7 +175,7 @@ Dedicated review adds `review_environment` as an isolation/schema/expiry marker.
 
 - Public registration disabled by default; no public administrator signup.
 - Exact local-auth guard and local-only `@medbridge.test` identity policy preserved.
-- Review profile defaults disabled, rejects ordinary/local identities and requires a proven dedicated database and private gate.
+- Review profile defaults disabled, rejects ordinary/local identities and requires a proven dedicated database and private role login.
 - Server-enforced review deadline: **end of 22 November 2026, Asia/Kolkata** (extended from the original 27 October deadline). Existing JWTs do not bypass expiry.
 - BCrypt hashes, in-memory browser JWTs, ownership/role/verification checks and bounded handoff attempts.
 - Hosted review database requires hostname-verifying TLS and restricted DML permissions; no startup schema reset.
