@@ -1,36 +1,96 @@
-import { beforeEach, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
-import DemoApp from '../demo/DemoApp.jsx';
-import { useAuth } from '../context/AuthContext.jsx';
-vi.mock('../context/AuthContext.jsx',()=>({useAuth:vi.fn()}));
-vi.mock('../lib/review-api.js',()=>({REVIEW_ENABLED:true}));
-vi.mock('../lib/demo-api.js',()=>({DEMO_ENABLED:false,demoRequest:vi.fn()}));
-let login;
-beforeEach(()=>{vi.clearAllMocks();login=vi.fn().mockResolvedValue({});useAuth.mockReturnValue({session:null,login});render(<MemoryRouter initialEntries={['/login']}><DemoApp/></MemoryRouter>);});
-it('shows separate private review entry without the public local account selectors',()=>{
- expect(screen.queryByLabelText('Private review invitation key')).not.toBeInTheDocument();
- expect(screen.queryByRole('button',{name:'Donor',exact:true})).not.toBeInTheDocument();
- expect(screen.queryByRole('button',{name:'Admin',exact:true})).not.toBeInTheDocument();
- expect(screen.getByText(/expires at the end of 22 November/)).toBeInTheDocument();
-});
-it('uses email and password without an invitation key and never autofills public credentials',async()=>{
- fireEvent.change(screen.getByLabelText('Email'),{target:{value:'donor@review.medbridge.invalid'}});
- fireEvent.change(screen.getByLabelText(/Password/,{selector:'input'}),{target:{value:'fictional-test-password'}});
- fireEvent.click(screen.getByRole('button',{name:'Login',exact:true}));
- await waitFor(()=>expect(login).toHaveBeenCalledWith('donor@review.medbridge.invalid','fictional-test-password'));
-});
+package com.medbridge.review;
 
-it('keeps the password accessible name stable when visibility changes without submitting',()=>{
- const password=screen.getByLabelText('Password',{exact:true});
- expect(password).toHaveAttribute('type','password');
- const show=screen.getByRole('button',{name:'Show password'});
- expect(show).toHaveAttribute('aria-pressed','false');
- fireEvent.click(show);
- expect(screen.getByLabelText('Password',{exact:true})).toBe(password);
- expect(password).toHaveAttribute('type','text');
- expect(screen.getByRole('button',{name:'Hide password'})).toHaveAttribute('aria-pressed','true');
- fireEvent.click(screen.getByRole('button',{name:'Hide password'}));
- expect(password).toHaveAttribute('type','password');
- expect(login).not.toHaveBeenCalled();
-});
+import com.medbridge.config.*;
+import java.time.*;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.mock.env.MockEnvironment;
+import org.springframework.mock.web.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+class ReviewModePolicyTest {
+    static final Instant BEFORE=Instant.parse("2026-10-25T06:00:00Z");
+    static String secret(){return UUID.randomUUID().toString()+UUID.randomUUID();}
+    static MockEnvironment valid(){
+        MockEnvironment env=new MockEnvironment();env.setActiveProfiles("review");
+        Map.ofEntries(Map.entry("app.review.enabled","true"),Map.entry("app.review.purpose",ReviewModePolicy.PURPOSE),
+            Map.entry("app.review.transport","loopback-test"),Map.entry("app.review.expires-at",ReviewModePolicy.HARD_STOP.toString()),
+            Map.entry("server.address","127.0.0.1"),Map.entry("app.frontend-url","http://127.0.0.1:5174"),
+            Map.entry("spring.datasource.url",ReviewModePolicy.LOCAL_URL),Map.entry("spring.datasource.username","mb_review_test"),
+            Map.entry("spring.datasource.driver-class-name","com.mysql.cj.jdbc.Driver"),Map.entry("spring.jpa.hibernate.ddl-auto","none"),
+            Map.entry("spring.sql.init.mode","never")).forEach(env::setProperty);
+        for(String key:List.of("app.jwt.secret","app.review.donor-password","app.review.ngo-password","app.review.pending-password","app.review.admin-password","spring.datasource.password"))env.setProperty(key,secret());
+        return env;
+    }
+    static ReviewModePolicy policy(MockEnvironment env){return new ReviewModePolicy(env,Clock.fixed(BEFORE,ZoneOffset.UTC));}
+    @Test void requiresDatabaseProofAndKeepsAllOriginalIdentitiesLocalOnly(){
+        var env=valid();var policy=policy(env);assertDoesNotThrow(policy::requireConfiguration);assertFalse(policy.ready());
+        policy.markDatabaseVerified();assertTrue(policy.ready());
+        var identities=new DemoIdentityPolicy(env,policy);
+        for(String name:List.of("meera","divya","pending","admin"))assertFalse(identities.allows(name.toUpperCase(Locale.ROOT)+"@MedBridge.Test"));
+        assertTrue(identities.allows("donor@review.medbridge.invalid"));assertFalse(identities.allows("person@example.invalid"));
+        assertFalse(new DemoIdentityPolicy(new MockEnvironment()).allows("donor@review.medbridge.invalid"));
+    }
+    @ParameterizedTest @CsvSource({"app.review.enabled,false","app.review.purpose,wrong",
+        "app.review.admin-password,DemoAdmin2026!","app.jwt.secret,short","app.allow-registration,true","app.demo-workflows,true",
+        "server.address,0.0.0.0","spring.sql.init.mode,always","spring.jpa.hibernate.ddl-auto,update",
+        "spring.datasource.username,production","spring.datasource.url,jdbc:mysql://unreachable.invalid/production",
+        "spring.datasource.hikari.jdbc-url,jdbc:mysql://unreachable.invalid/production","app.frontend-url,http://example.invalid",
+        "app.review.expires-at,2026-11-22T18:30:01Z"})
+    void incorrectSettingsFailClosed(String key,String value){var env=valid().withProperty(key,value);assertThrows(IllegalStateException.class,policy(env)::requireConfiguration);assertFalse(policy(env).ready());}
+    @Test void profileFlagMissingConfigurationAndMixedProfilesNeverSuffice(){
+        for(MockEnvironment env:List.of(new MockEnvironment(),new MockEnvironment().withProperty("app.review.enabled","true"),valid())){
+            if(env.getActiveProfiles().length>0)env.setActiveProfiles("review","production");
+            assertThrows(IllegalStateException.class,policy(env)::requireConfiguration);
+        }
+    }
+    @Test void cutoffIsExactlyMidnightAfterNovember22InKolkata(){
+        assertEquals(Instant.parse("2026-11-22T18:30:00Z"),ReviewModePolicy.HARD_STOP);
+        for(Instant time:List.of(ReviewModePolicy.HARD_STOP,ReviewModePolicy.HARD_STOP.plusSeconds(1)))assertThrows(IllegalStateException.class,()->new ReviewModePolicy(valid(),Clock.fixed(time,ZoneOffset.UTC)).requireConfiguration());
+    }
+    @Test void hostedTransportRequiresHostnameVerifyingTlsAndExactOrigin(){
+        var env=valid().withProperty("app.review.transport","hosted-tls").withProperty("server.address","0.0.0.0")
+            .withProperty("app.review.database-host","fictional-review.aivencloud.com")
+            .withProperty("spring.datasource.url","jdbc:mysql://fictional-review.aivencloud.com:12345/"+ReviewModePolicy.DATABASE+"?sslMode=VERIFY_IDENTITY&serverTimezone=UTC")
+            .withProperty("app.frontend-url","https://fictional-review.example.invalid");
+        assertThrows(IllegalStateException.class,policy(env)::requireConfiguration);
+        env.setProperty("spring.datasource.url",env.getProperty("spring.datasource.url").replace("VERIFY_IDENTITY","REQUIRED"));
+        assertThrows(IllegalStateException.class,policy(env)::requireConfiguration);
+    }
+    @Test void startupRefusesInvalidReviewBeforeCreatingAnyDataSource(){
+        AtomicInteger connections=new AtomicInteger();
+        try(var context=new AnnotationConfigApplicationContext()){
+            context.registerBean("testPolicy",ReviewModePolicy.class,()->policy(valid().withProperty("server.address","0.0.0.0")), definition -> definition.setPrimary(true));
+            context.registerBean("dataSource",Object.class,()->{connections.incrementAndGet();return new Object();});
+            context.register(ReviewConfiguration.class);assertThrows(RuntimeException.class,context::refresh);assertEquals(0,connections.get());
+        }
+    }
+    @Test void passwordLoginRateLimitAndExpiryAreServerEnforced()throws Exception{
+        var env=valid();var policy=policy(env);policy.markDatabaseVerified();var filter=new ReviewAccessFilter(policy);
+        var missing=new MockHttpServletResponse();filter.doFilter(new MockHttpServletRequest("POST","/api/auth/login"),missing,new MockFilterChain());assertEquals(200,missing.getStatus());
+        for(int i=0;i<10;i++){
+            var request=new MockHttpServletRequest("POST","/api/auth/login");request.addHeader("X-Forwarded-For","198.51.100."+i);
+            var response=new MockHttpServletResponse();filter.doFilter(request,response,new MockFilterChain());
+            if(i==9)assertEquals(429,response.getStatus());
+        }
+        var request=new MockHttpServletRequest("GET","/api/demo/summary");
+        var accepted=new MockHttpServletResponse();filter.doFilter(request,accepted,new MockFilterChain());assertEquals(200,accepted.getStatus());
+        env.setProperty("app.review.expires-at",BEFORE.toString());var expired=new MockHttpServletResponse();filter.doFilter(request,expired,new MockFilterChain());assertEquals(503,expired.getStatus());
+    }
+    @Test void databaseProofRejectsProductionRecordsAndAdministrativeGrants(){
+        JdbcTemplate db=mock(JdbcTemplate.class);when(db.queryForObject("SELECT DATABASE()",String.class)).thenReturn(ReviewModePolicy.DATABASE);
+        when(db.queryForList(anyString())).thenReturn(List.of(Map.of("purpose",ReviewModePolicy.PURPOSE,"schema_version",1,"expires_at",ReviewModePolicy.HARD_STOP.toString())));
+        when(db.queryForObject(contains("COUNT"),eq(Long.class))).thenReturn(1L);
+        assertThrows(IllegalStateException.class,()->ReviewConfiguration.verifyDatabase(db,policy(valid())));
+        when(db.queryForObject(contains("COUNT"),eq(Long.class))).thenReturn(0L);
+        when(db.query(eq("SHOW GRANTS"),org.mockito.ArgumentMatchers.<org.springframework.jdbc.core.RowMapper<String>>any())).thenReturn(List.of("GRANT ALL PRIVILEGES ON *.* TO 'fixture'@'%'"));
+        assertThrows(IllegalStateException.class,()->ReviewConfiguration.verifyDatabase(db,policy(valid())));
+    }
+}
