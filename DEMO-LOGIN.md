@@ -1,5 +1,7 @@
 # Intentionally public fictional demo logins
 
+> Hosted review update (27 October 2026): email/password-only login is deployed. The shared invitation-key requirement is removed. JWT, roles, ownership, isolated database/TLS, disabled registration, rate limits and the end-of-22-November-2026 Asia/Kolkata cutoff remain. Public local demo passwords still do not work online. Working review passwords are never published.
+
 These credentials are PUBLIC, DEMO-ONLY test fixtures, not secrets. They work only in the explicitly enabled isolated local development database. Never reuse them, seed them remotely, put them in hosted environment settings or CI secrets, or enable deployed authentication with them.
 
 | Selector | Name / organization | Email | Public demo password |
@@ -20,4 +22,4 @@ All verification decisions are fictional. No medicine, prescription, medical inf
 
 ## Separate protected online review preparation
 
-The four identities above remain local-only under `DemoIdentityPolicy`, even in review mode. Separate review accounts use the reserved domain `@review.medbridge.invalid`, private randomly generated passwords and a private invitation gate. None of their working passwords or a hosted review URL is published. The local rehearsal generates only test fixtures in ignored `.review/local.env`; these are not deployed credentials. Review access expires server-side at midnight after October 26, 2026 Asia/Kolkata. See [deployment approvals](DEPLOYMENT-GUIDE.md) and [security boundaries](SECURITY-AND-DEMO-LIMITATIONS.md).
+The four identities above remain local-only under `DemoIdentityPolicy`, even in review mode. Separate review accounts use the reserved domain `@review.medbridge.invalid`, private passwords and email/password-only login (no invitation key). None of their working passwords or a hosted review URL is published. The local rehearsal generates only test fixtures in ignored `.review/local.env`; these are not deployed credentials. Review access expires server-side at midnight after November 22, 2026 Asia/Kolkata. See [deployment approvals](DEPLOYMENT-GUIDE.md) and [security boundaries](SECURITY-AND-DEMO-LIMITATIONS.md).
