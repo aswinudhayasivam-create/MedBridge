@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @org.springframework.context.annotation.Import(ReviewMySqlIT.TestTime.class)
 class ReviewMySqlIT {
     static String secret(){return UUID.randomUUID().toString()+UUID.randomUUID();}
-    static final String DATABASE_PASSWORD=secret(), GATE=secret(), SIGNING=secret();
+    static final String DATABASE_PASSWORD=secret(), SIGNING=secret();
     static final Map<String,String> PASSWORDS=Map.of("donor",secret(),"ngo",secret(),"pending",secret(),"admin",secret());
     @org.testcontainers.junit.jupiter.Container
     static final org.testcontainers.containers.MySQLContainer<?> MYSQL=new org.testcontainers.containers.MySQLContainer<>("mysql:8.4")
@@ -54,7 +54,7 @@ class ReviewMySqlIT {
         jdbc.execute("GRANT SELECT,INSERT,UPDATE,DELETE ON "+ReviewModePolicy.DATABASE+".* TO 'mb_review_fixture'@'%'");
         Map<String,String> values=new HashMap<>(Map.ofEntries(
             Map.entry("app.review.enabled","true"),Map.entry("app.review.purpose",ReviewModePolicy.PURPOSE),Map.entry("app.review.transport","loopback-test"),
-            Map.entry("app.review.expires-at",ReviewModePolicy.HARD_STOP.toString()),Map.entry("app.review.access-key",GATE),
+            Map.entry("app.review.expires-at",ReviewModePolicy.HARD_STOP.toString()),
             Map.entry("server.address","127.0.0.1"),Map.entry("app.frontend-url","http://127.0.0.1:5174"),
             Map.entry("spring.datasource.url",ReviewModePolicy.LOCAL_URL),Map.entry("spring.datasource.username","mb_review_fixture"),
             Map.entry("spring.datasource.password",DATABASE_PASSWORD),Map.entry("spring.datasource.driver-class-name","com.mysql.cj.jdbc.Driver"),
@@ -68,7 +68,7 @@ class ReviewMySqlIT {
     @LocalServerPort int port;
     String donor,ngo,pending,admin;final List<Long> medicineIds=new ArrayList<>();
     ResponseEntity<String> call(HttpMethod method,String path,Object body,String token){
-        var headers=new HttpHeaders();headers.setContentType(MediaType.APPLICATION_JSON);headers.set("X-MedBridge-Review-Key",GATE);if(token!=null)headers.setBearerAuth(token);
+        var headers=new HttpHeaders();headers.setContentType(MediaType.APPLICATION_JSON);if(token!=null)headers.setBearerAuth(token);
         return http.exchange("http://127.0.0.1:"+port+path,method,new HttpEntity<>(body,headers),String.class);
     }
     JsonNode data(ResponseEntity<String> response)throws Exception{return json.readTree(response.getBody());}
@@ -76,7 +76,7 @@ class ReviewMySqlIT {
     long photo()throws Exception{
         var bytes=new ByteArrayOutputStream();ImageIO.write(new BufferedImage(120,60,BufferedImage.TYPE_INT_RGB),"png",bytes);
         var body=new LinkedMultiValueMap<String,Object>();body.add("file",new ByteArrayResource(bytes.toByteArray()){@Override public String getFilename(){return "synthetic.png";}});
-        var headers=new HttpHeaders();headers.setBearerAuth(donor);headers.setContentType(MediaType.MULTIPART_FORM_DATA);headers.set("X-MedBridge-Review-Key",GATE);
+        var headers=new HttpHeaders();headers.setBearerAuth(donor);headers.setContentType(MediaType.MULTIPART_FORM_DATA);
         var response=http.exchange("http://127.0.0.1:"+port+"/api/demo/photos",HttpMethod.POST,new HttpEntity<>(body,headers),String.class);
         assertEquals(201,response.getStatusCode().value());assertFalse(data(response).path("ocrPerformed").asBoolean());return data(response).path("photoId").asLong();
     }
@@ -85,6 +85,8 @@ class ReviewMySqlIT {
     long request(long id,String token)throws Exception{var r=call(HttpMethod.POST,"/api/demo/medicines/"+id+"/requests",Map.of("quantity",3,"note","Fictional demo request"),token);assertEquals(201,r.getStatusCode().value(),r.getBody());return data(r).path("requestId").asLong();}
     @Test void completePersistedJourneyAndSecurityBoundaries()throws Exception{
         donor=login("donor@review.medbridge.invalid",PASSWORDS.get("donor"));ngo=login("ngo@review.medbridge.invalid",PASSWORDS.get("ngo"));pending=login("pending@review.medbridge.invalid",PASSWORDS.get("pending"));admin=login("admin@review.medbridge.invalid",PASSWORDS.get("admin"));
+        assertEquals(401,call(HttpMethod.GET,"/api/demo/summary",null,null).getStatusCode().value());
+        assertEquals(401,call(HttpMethod.POST,"/api/auth/login",Map.of("email","donor@review.medbridge.invalid","password","wrong-password"),null).getStatusCode().value());
         long pendingId=db.queryForObject("SELECT user_id FROM users WHERE email='pending@review.medbridge.invalid'",Long.class);
         try{
             assertEquals(403,call(HttpMethod.GET,"/api/demo/browse",null,pending).getStatusCode().value());
