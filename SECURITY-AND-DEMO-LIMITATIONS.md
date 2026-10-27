@@ -1,11 +1,13 @@
 # Security and demonstration limitations
 
-> Hosted review update (27 October 2026): email/password-only login is deployed. The shared invitation-key requirement is removed. JWT, roles, ownership, isolated database/TLS, disabled registration, rate limits and the end-of-22-November-2026 Asia/Kolkata cutoff remain. Public local demo passwords still do not work online. Working review passwords are never published.
+> Public-demo change (27 October 2026): the owner approved publishing newly rotated disposable donor, NGO, pending-NGO and admin logins in README. Anyone can use those roles and edit fictional records. Existing private passwords were not published. Do not enter real data. Other security boundaries and cutoff remain.
+
+> Hosted review update (27 October 2026): email/password-only login is deployed. The shared invitation-key requirement is removed. JWT, roles, ownership, isolated database/TLS, disabled registration, rate limits and the end-of-22-November-2026 Asia/Kolkata cutoff remain. Public local demo passwords still do not work online. The owner approved public disposable role logins for this synthetic demo; existing private credentials were replaced before publication.
 
 ## Environment separation
 
 1. Public `@medbridge.test` credentials remain local-only under the complete unchanged isolation guard. No review profile, invitation header, flag, token or query parameter bypasses that rule.
-2. Review identities end in `@review.medbridge.invalid`; passwords and signing keys are generated privately, never committed. These identities are rejected outside a ready review environment.
+2. Review identities end in `@review.medbridge.invalid`; signing keys stay private; role passwords are now disposable public demo values in README. These identities are rejected outside a ready review environment.
 3. Review is disabled by default. It requires a dedicated approved database, exact profile and settings, a marker, restricted grants, private credentials, exact CORS origin and server deadline. Loopback-test transport cannot use a public bind or remote DB.
 4. Normal production builds remain unable to submit authentication or workflows. An explicit review build is separate and still needs the backend email/password login and all server checks. A Vercel preview alone cannot activate access.
 
@@ -33,7 +35,7 @@ This is a fictional college evaluation, not a medically validated service. Assis
 
 Received equals simulated collection. Confirmation may occur before the illustrative appointment time. Terminal re-requesting by the same NGO is blocked by the original unique constraint. Abandoned synthetic uploads and fictional test notifications/audit history can remain until an approved dedicated-data reset. Design follows the supplied PDFs closely, with explicit safety text and system-font fallbacks; it is not a pixel-perfect reproduction.
 
-Free hosting can sleep, exhaust quotas, restart processes or become unavailable; no availability SLA is promised. Private role passwords and JWT checks protect the review API; no shared invitation key is required. Distributed brute-force prevention, per-user throttling, session revocation, comprehensive monitoring and assistive-technology audits remain future work. Operators must avoid exposing credential-bearing logs/traces.
+Free hosting can sleep, exhaust quotas, restart processes or become unavailable; no availability SLA is promised. Disposable public-demo role passwords and JWT checks gate the review API; no shared invitation key is required. Distributed brute-force prevention, per-user throttling, session revocation, comprehensive monitoring and assistive-technology audits remain future work. Operators must avoid exposing credential-bearing logs/traces.
 
 ## Requirements before real users
 
