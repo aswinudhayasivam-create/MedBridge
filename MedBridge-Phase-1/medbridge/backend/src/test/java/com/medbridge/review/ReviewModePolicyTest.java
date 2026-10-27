@@ -26,7 +26,7 @@ class ReviewModePolicyTest {
             Map.entry("spring.datasource.url",ReviewModePolicy.LOCAL_URL),Map.entry("spring.datasource.username","mb_review_test"),
             Map.entry("spring.datasource.driver-class-name","com.mysql.cj.jdbc.Driver"),Map.entry("spring.jpa.hibernate.ddl-auto","none"),
             Map.entry("spring.sql.init.mode","never")).forEach(env::setProperty);
-        for(String key:List.of("app.review.access-key","app.jwt.secret","app.review.donor-password","app.review.ngo-password","app.review.pending-password","app.review.admin-password","spring.datasource.password"))env.setProperty(key,secret());
+        for(String key:List.of("app.jwt.secret","app.review.donor-password","app.review.ngo-password","app.review.pending-password","app.review.admin-password","spring.datasource.password"))env.setProperty(key,secret());
         return env;
     }
     static ReviewModePolicy policy(MockEnvironment env){return new ReviewModePolicy(env,Clock.fixed(BEFORE,ZoneOffset.UTC));}
@@ -38,7 +38,7 @@ class ReviewModePolicyTest {
         assertTrue(identities.allows("donor@review.medbridge.invalid"));assertFalse(identities.allows("person@example.invalid"));
         assertFalse(new DemoIdentityPolicy(new MockEnvironment()).allows("donor@review.medbridge.invalid"));
     }
-    @ParameterizedTest @CsvSource({"app.review.enabled,false","app.review.purpose,wrong","app.review.access-key,short",
+    @ParameterizedTest @CsvSource({"app.review.enabled,false","app.review.purpose,wrong",
         "app.review.admin-password,DemoAdmin2026!","app.jwt.secret,short","app.allow-registration,true","app.demo-workflows,true",
         "server.address,0.0.0.0","spring.sql.init.mode,always","spring.jpa.hibernate.ddl-auto,update",
         "spring.datasource.username,production","spring.datasource.url,jdbc:mysql://unreachable.invalid/production",
@@ -72,15 +72,15 @@ class ReviewModePolicyTest {
             context.register(ReviewConfiguration.class);assertThrows(RuntimeException.class,context::refresh);assertEquals(0,connections.get());
         }
     }
-    @Test void privateInvitationRateLimitAndExpiryAreServerEnforced()throws Exception{
+    @Test void passwordLoginRateLimitAndExpiryAreServerEnforced()throws Exception{
         var env=valid();var policy=policy(env);policy.markDatabaseVerified();var filter=new ReviewAccessFilter(policy);
-        var missing=new MockHttpServletResponse();filter.doFilter(new MockHttpServletRequest("POST","/api/auth/login"),missing,new MockFilterChain());assertEquals(401,missing.getStatus());
+        var missing=new MockHttpServletResponse();filter.doFilter(new MockHttpServletRequest("POST","/api/auth/login"),missing,new MockFilterChain());assertEquals(200,missing.getStatus());
         for(int i=0;i<10;i++){
             var request=new MockHttpServletRequest("POST","/api/auth/login");request.addHeader("X-Forwarded-For","198.51.100."+i);
             var response=new MockHttpServletResponse();filter.doFilter(request,response,new MockFilterChain());
             if(i==9)assertEquals(429,response.getStatus());
         }
-        var request=new MockHttpServletRequest("GET","/api/demo/summary");request.addHeader("X-MedBridge-Review-Key",env.getProperty("app.review.access-key"));
+        var request=new MockHttpServletRequest("GET","/api/demo/summary");
         var accepted=new MockHttpServletResponse();filter.doFilter(request,accepted,new MockFilterChain());assertEquals(200,accepted.getStatus());
         env.setProperty("app.review.expires-at",BEFORE.toString());var expired=new MockHttpServletResponse();filter.doFilter(request,expired,new MockFilterChain());assertEquals(503,expired.getStatus());
     }
