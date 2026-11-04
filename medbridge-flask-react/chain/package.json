@@ -1,0 +1,1 @@
+{"name":"medbridge-local-chain","private":true,"version":"0.1.0","description":"Local DEMO chain for anchoring audit roots. Not a public network.","scripts":{"node":"hardhat node","test":"hardhat test"},"devDependencies":{"hardhat":"^2.22.0","@nomicfoundation/hardhat-toolbox":"^5.0.0"}}
