@@ -1,0 +1,9 @@
+node_modules/
+dist/
+__pycache__/
+.pytest_cache/
+*.db
+.env
+chain/artifacts/
+chain/cache/
+chain/deployed.json
