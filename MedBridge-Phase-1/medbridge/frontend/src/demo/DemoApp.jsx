@@ -18,14 +18,18 @@ function Field({ label, children }) { return <label className="demo-field"><span
 function Timeline({ items }) { return <ol className="demo-timeline">{items.map(([label, time, eventKey], index) => <li key={eventKey ?? index} className={time ? 'done' : ''}><span>{time ? <Check size={13}/> : '○'}</span><div><strong>{label}</strong><small>{time ? date(time) : 'Not yet'}</small></div></li>)}</ol>; }
 
 function Photo({ id }) {
-  const { session } = useAuth(); const [url, setUrl] = useState('');
+  const { session } = useAuth(); const [url, setUrl] = useState(''); const [state, setState] = useState('loading');
   useEffect(() => { let active = true, objectUrl;
-    if (id) demoRequest(`/api/demo/photos/${id}`, session.token, { binary: true }).then(blob => {
-      objectUrl = URL.createObjectURL(blob); if (active) setUrl(objectUrl); else URL.revokeObjectURL(objectUrl);
-    }).catch(() => {});
+    if (!id) { setState('error'); return undefined; }
+    setState('loading');
+    const load = () => demoRequest(`/api/demo/photos/${id}`, session.token, { binary: true });
+    load().catch(() => load()).then(blob => {
+      objectUrl = URL.createObjectURL(blob); if (active) { setUrl(objectUrl); setState('ok'); } else URL.revokeObjectURL(objectUrl);
+    }).catch(() => { if (active) setState('error'); });
     return () => { active = false; if (objectUrl) URL.revokeObjectURL(objectUrl); };
   }, [id, session.token]);
-  return url ? <img className="demo-label-photo" src={url} alt="Uploaded synthetic medicine label; details confirmed by the donor"/> : <span className="demo-muted">Synthetic label preview unavailable</span>;
+  if (state === 'ok' && url) return <img className="demo-label-photo" src={url} alt="Uploaded synthetic medicine label; details confirmed by the donor"/>;
+  return <span className="demo-muted">{state === 'error' ? 'Synthetic label preview unavailable' : 'Loading synthetic label…'}</span>;
 }
 
 function Login() {
